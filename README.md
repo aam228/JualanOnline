@@ -4,11 +4,18 @@ E-commerce website dengan React + TypeScript (Frontend) dan Express.js + MongoDB
 
 ## 📸 Screenshots
 
-### Dashboard / Homepage
-![Dashboard](screenshots/dashboard.png)
-
-### Product Detail Page
-![Product Detail](screenshots/detail.png)
+<table>
+  <tr>
+    <td width="50%">
+      <h3 align="center">Dashboard / Homepage</h3>
+      <img src="screenshots/dashboard.png" alt="Dashboard" />
+    </td>
+    <td width="50%">
+      <h3 align="center">Product Detail Page</h3>
+      <img src="screenshots/detail.png" alt="Product Detail" />
+    </td>
+  </tr>
+</table>
 
 ## 🚀 Quick Start
 
