@@ -1,0 +1,162 @@
+.product-list-section {
+  padding: 0;
+}
+
+.fallback-notice {
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  color: #92400E;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 13px;
+  text-align: center;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.loading,
+.error-message,
+.no-products {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--gray);
+  font-size: 15px;
+}
+
+.error-message {
+  color: #DC2626;
+  background: #FEE2E2;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.loading {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* Large Desktop */
+@media (max-width: 1400px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .fallback-notice {
+    font-size: 12px;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .loading,
+  .error-message,
+  .no-products {
+    padding: 2rem 1rem;
+    font-size: 14px;
+  }
+}
+
+/* Small Mobile - Referensi Tokopedia/Shopee */
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .fallback-notice {
+    font-size: 11px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .loading,
+  .error-message,
+  .no-products {
+    padding: 1.5rem 0.75rem;
+    font-size: 13px;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 360px) {
+  .products-grid {
+    gap: 0.35rem;
+  }
+}
+
+/* Product Card Styles for ProductList */
+.products-grid .product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 420px;
+}
+
+.products-grid .product-image-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 280px;
+  max-height: 280px;
+  overflow: hidden;
+}
+
+.products-grid .product-image-wrapper img {
+  transition: opacity 0.3s ease;
+}
+
+.products-grid .product-card:hover .product-image-wrapper img {
+  opacity: 0.7;
+}
+
+.products-grid .product-info {
+  padding-top: 0;
+  text-align: center;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+.products-grid .product-card-name {
+  text-align: center;
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.products-grid .product-card:hover .product-card-name {
+  opacity: 0.6;
+}
+
+.products-grid .product-card-price {
+  text-align: center;
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.products-grid .product-card:hover .product-card-price {
+  opacity: 0.6;
+}

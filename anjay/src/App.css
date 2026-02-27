@@ -1,0 +1,341 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+  --primary: #00A550;
+  --primary-hover: #00D16A;
+  --primary-dark: #008A43;
+  --secondary: #FF6B35;
+  --dark: #000000;
+  --gray: #6B7280;
+  --gray-light: #F3F4F6;
+  --white: #FFFFFF;
+  --bg-gray: #E8E8E8;
+  --footer-bg: #2C3E50;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);
+  --shadow-green: 0 4px 12px rgba(0, 165, 80, 0.15);
+  --transition: all 0.3s ease;
+  --border-radius: 12px;
+  --max-width: 1280px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--dark);
+  background-color: var(--bg-gray);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  font-size: 15px;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  background: var(--bg-gray);
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+section {
+  padding: clamp(2rem, 5vw, 3rem) 0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.65rem 1.5rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-green);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-outline:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 2rem;
+  text-align: center;
+  line-height: 1.2;
+  color: #4CAF50;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-subtitle {
+  color: var(--gray);
+  max-width: 300px;
+  margin: 0 auto 2rem;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+@media (max-width: 992px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-layout {
+    padding-bottom: 60px;
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  body {
+    font-size: 13px;
+  }
+
+  .section-title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1.25rem;
+    font-size: 14px;
+  }
+
+  section {
+    padding: clamp(1.5rem, 4vw, 2rem) 0;
+  }
+}
+
+/* Touch-friendly improvements for mobile */
+@media (max-width: 480px) {
+  /* Increase tap target sizes */
+  button, a, input, select {
+    min-height: 44px;
+  }
+
+  /* Prevent text selection on double tap */
+  * {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in inputs and content areas */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Smooth scrolling on iOS */
+  .cart-items,
+  .main-content {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Extra Small Mobile Optimizations */
+@media (max-width: 360px) {
+  .main-content {
+    padding: 0.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.35rem, 4vw, 1.75rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .btn {
+    padding: 0.55rem 1rem;
+    font-size: 13px;
+  }
+}
+
+/* Toast Notification */
+.cart-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 10000;
+  animation: slideIn 0.3s ease-out;
+  min-width: 300px;
+  border-left: 4px solid var(--primary);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 2px;
+}
+
+.toast-product {
+  font-size: 13px;
+  color: var(--gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .cart-toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    padding: 0.85rem 1rem;
+  }
+
+  .toast-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .toast-title {
+    font-size: 13px;
+  }
+
+  .toast-product {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-toast {
+    top: 70px;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .toast-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 15px;
+  }
+
+  .toast-title {
+    font-size: 12px;
+  }
+
+  .toast-product {
+    font-size: 11px;
+  }
+}

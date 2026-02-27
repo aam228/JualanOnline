@@ -1,0 +1,29 @@
+.home-page {
+  width: 100%;
+}
+
+.home-page .section-title {
+  margin-bottom: 2rem;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .home-page .section-title {
+    margin-bottom: 1.75rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .home-page .section-title {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .home-page .section-title {
+    margin-bottom: 1.25rem;
+    padding: 0 0.5rem;
+  }
+}
