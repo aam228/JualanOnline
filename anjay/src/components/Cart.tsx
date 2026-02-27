@@ -1,4 +1,5 @@
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiX, FiTrash2, FiPlus, FiMinus } from 'react-icons/fi';
 import './Cart.css';
 
@@ -8,7 +9,13 @@ interface CartProps {
 }
 
 const Cart = ({ isOpen, onClose }: CartProps) => {
+  const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+
+  const handleCheckout = () => {
+    onClose();
+    navigate('/checkout');
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -94,7 +101,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                   <span>Total:</span>
                   <span className="total-price">{formatPrice(getTotalPrice())}</span>
                 </div>
-                <button className="btn btn-checkout">Checkout</button>
+                <button className="btn btn-checkout" onClick={handleCheckout}>Checkout</button>
                 <button className="btn btn-clear" onClick={clearCart}>
                   Kosongkan Keranjang
                 </button>

@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import HomePage from './pages/HomePage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import CheckoutPage from './pages/CheckoutPage';
 import Cart from './components/Cart';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/product/:id" element={<ProductDetailPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
               </Routes>
             </main>
           </div>
