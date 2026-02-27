@@ -2,6 +2,14 @@
 
 E-commerce website dengan React + TypeScript (Frontend) dan Express.js + MongoDB (Backend).
 
+## 📸 Screenshots
+
+### Dashboard / Homepage
+![Dashboard](screenshots/dashboard.png)
+
+### Product Detail Page
+![Product Detail](screenshots/detail.png)
+
 ## 🚀 Quick Start
 
 ### Backend Setup
