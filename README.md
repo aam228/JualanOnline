@@ -1,6 +1,6 @@
 # Anjay E-commerce
 
-E-commerce website dengan React + TypeScript (Frontend) dan Express.js + MongoDB (Backend).
+Web E-commerce dengan UI yang simple dan compact, mempunyai responsive yang bagus untuk di ukuran dekstop maupun mobile. fitur yang lengkap untuk setiap kebutuhan ecommerce anda.
 
 ## 📸 Screenshots
 
