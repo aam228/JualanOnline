@@ -1,0 +1,61 @@
+// Prisma schema for second-hand luxury streetwear product
+// PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id              String   @id @default(uuid())
+  name            String
+  brand           String
+  category        String
+  price           Int
+  originalPrice   Int?
+  condition       Int      // 1-10
+  size            String
+  color           String
+  authenticity    String
+  material        String?
+  year            Int?
+  chest           Float
+  length          Float
+  shoulder        Float?
+  sleeve          Float?
+  flaws           Flaw[]
+  images          Image[]
+  sku             String   @unique
+  stock           Int
+  shippingMethod  String
+  shippingWeight  Float
+  shippingOrigin  String
+  shippingEta     String
+  seoTitle        String?
+  seoDescription  String?
+  seoSlug         String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Flaw {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  description String
+  severity  Int
+  photoUrl  String?
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  url       String
+  tag       String?
+  order     Int
+}

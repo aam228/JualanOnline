@@ -20,9 +20,20 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
 
   const handleAddToCart = () => {
     const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
-    const firstActiveSKU = product.skus.find(sku => sku.isActive && sku.stock > 0);
-    
-    if (!firstActiveSKU) {
+    let skuToUse = product.skus.find(sku => sku.isActive && sku.stock > 0);
+    let stockToUse = 0;
+    let priceToUse = 0;
+    let skuCode = '';
+
+    if (skuToUse) {
+      stockToUse = skuToUse.stock;
+      priceToUse = skuToUse.price;
+      skuCode = skuToUse.sku;
+    } else if (typeof product.stock === 'number' && product.stock > 0) {
+      stockToUse = product.stock;
+      priceToUse = product.priceRange?.min || product.price || 0;
+      skuCode = product._id || product.name || 'SINGLE';
+    } else {
       alert('Produk tidak tersedia');
       return;
     }
@@ -30,18 +41,21 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
     addToCart({
       _id: product._id,
       name: product.name,
-      price: firstActiveSKU.price,
+      price: priceToUse,
       image: primaryImage?.url || '',
       category: product.category.name,
       description: product.description.short,
-      stock: firstActiveSKU.stock,
-      sku: firstActiveSKU.sku,
+      stock: stockToUse,
+      sku: skuCode,
     });
     onClose();
   };
 
   const getTotalStock = () => {
-    return product.skus.reduce((sum, sku) => sum + sku.stock, 0);
+    if (Array.isArray(product.skus) && product.skus.length > 0) {
+      return product.skus.reduce((sum, sku) => sum + sku.stock, 0);
+    }
+    return typeof product.stock === 'number' ? product.stock : 1;
   };
 
   const totalStock = getTotalStock();

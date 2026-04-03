@@ -37,11 +37,11 @@ const ProductList = () => {
   };
 
   const getTotalStock = (product: Product) => {
-    return product.skus.reduce((sum, sku) => sum + sku.stock, 0);
+    return (product.skus ?? []).reduce((sum, sku) => sum + sku.stock, 0);
   };
 
   const getAvailableSKUs = (product: Product) => {
-    return product.skus.filter(sku => sku.isActive && sku.stock > 0).length;
+    return (product.skus ?? []).filter(sku => sku.isActive && sku.stock > 0).length;
   };
 
   if (loading) {
@@ -73,7 +73,7 @@ const ProductList = () => {
           products.map(product => {
             const totalStock = getTotalStock(product);
             const availableSKUs = getAvailableSKUs(product);
-            const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+            const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
 
             return (
               <div
@@ -82,24 +82,28 @@ const ProductList = () => {
                 onClick={() => navigate(`/product/${product._id}`)}
               >
                 <div className="product-image-wrapper">
-                  <img 
-                    src={primaryImage?.url} 
-                    alt={primaryImage?.alt || product.name}
-                    className="product-image"
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      display: 'block'
-                    }}
-                  />
+                  {primaryImage?.url ? (
+                    <img 
+                      src={primaryImage.url || undefined} 
+                      alt={primaryImage.alt || product.name}
+                      className="product-image"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        width: 'auto',
+                        height: 'auto',
+                        objectFit: 'contain',
+                        display: 'block'
+                      }}
+                    />
+                  ) : null}
                 </div>
                 <div className="product-info">
                   <h3 className="product-card-name">{product.name}</h3>
                   <p className="product-card-price">
-                    {formatPrice(product.priceRange.min)}
+                    {product.priceRange && typeof product.priceRange.min === 'number'
+                      ? formatPrice(product.priceRange.min)
+                      : 'N/A'}
                   </p>
                 </div>
                   {(totalStock === 0 || availableSKUs === 0) && (

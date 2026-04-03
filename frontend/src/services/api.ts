@@ -66,6 +66,7 @@ export interface Product {
   description: ProductDescription;
   images: ProductImage[];
   priceRange: PriceRange;
+  price?: number; // Tambahan untuk produk tanpa variant
   variantOptions: VariantOption[];
   skus: SKU[];
   physical: Physical;
@@ -75,6 +76,7 @@ export interface Product {
   ratings: Ratings;
   createdAt: string;
   updatedAt: string;
+  stock?: number; // Tambahan untuk produk tanpa variant
 }
 
 export const productAPI = {

@@ -88,18 +88,47 @@ const ProductDetailPage = () => {
   };
 
   const handleAddToCart = () => {
-    if (!product || !selectedSKU) return;
-    
+    if (!product) return;
+    let price: number;
+    let stock: number;
+    let sku: string;
+    let selectedVariantsToSend: { [key: string]: string } | undefined;
+    let image = product.images[0]?.url || '📦';
+
+    if (selectedSKU) {
+      price = selectedSKU.price;
+      stock = selectedSKU.stock;
+      sku = selectedSKU.sku;
+      selectedVariantsToSend = selectedVariants;
+    } else if (Array.isArray(product.skus) && product.skus.length === 0) {
+      // Produk seed tanpa SKU/variant
+      price = typeof product.price === 'number' ? product.price : (product.priceRange?.min ?? 0);
+      stock = typeof product.stock === 'number' ? product.stock : 1; // default 1 jika tidak ada stock
+      sku = product._id || product.name || 'SINGLE';
+      selectedVariantsToSend = undefined;
+    } else {
+      // Fallback lama
+      price = product.priceRange?.min ?? product.price ?? 0;
+      stock = typeof product.stock === 'number' ? product.stock : 0;
+      sku = product._id || product.name || 'SINGLE';
+      selectedVariantsToSend = undefined;
+    }
+
+    if (stock <= 0 || price <= 0) {
+      alert('Produk tidak tersedia');
+      return;
+    }
+
     addToCart({
       _id: product._id,
       name: product.name,
-      price: selectedSKU.price,
-      image: product.images[0]?.url || '📦',
-      category: product.category.name,
-      description: product.description.short,
-      stock: selectedSKU.stock,
-      selectedVariants,
-      sku: selectedSKU.sku,
+      price,
+      image,
+      category: product.category?.name || '',
+      description: typeof product.description === 'object' ? product.description.short : (product.description || ''),
+      stock,
+      selectedVariants: selectedVariantsToSend,
+      sku,
     });
   };
 
@@ -122,9 +151,21 @@ const ProductDetailPage = () => {
     );
   }
 
-  const currentPrice = selectedSKU ? selectedSKU.price : product.priceRange.min;
-  const currentStock = selectedSKU ? selectedSKU.stock : 0;
-  const isAvailable = selectedSKU && selectedSKU.isActive && currentStock > 0;
+  // Logic harga dan stok fallback untuk produk tanpa variant
+  const hasSKU = Array.isArray(product.skus) && product.skus.length > 0;
+  let currentPrice: number;
+  let currentStock: number;
+  if (selectedSKU) {
+    currentPrice = selectedSKU.price;
+    currentStock = selectedSKU.stock;
+  } else if (Array.isArray(product.skus) && product.skus.length === 0) {
+    currentPrice = typeof product.price === 'number' ? product.price : (product.priceRange?.min ?? 0);
+    currentStock = typeof product.stock === 'number' ? product.stock : 1;
+  } else {
+    currentPrice = product?.priceRange?.min ?? product?.price ?? 0;
+    currentStock = typeof product.stock === 'number' ? product.stock : 0;
+  }
+  const isAvailable = (selectedSKU && selectedSKU.isActive && currentStock > 0) || (!hasSKU && currentStock > 0);
 
   return (
     <div className="product-detail-page">
@@ -135,11 +176,13 @@ const ProductDetailPage = () => {
             Beranda
           </button>
           <FiChevronRight size={14} className="breadcrumb-separator" />
-          <button onClick={() => navigate('/')} className="breadcrumb-link">
-            {product.category.name}
-          </button>
-          <FiChevronRight size={14} className="breadcrumb-separator" />
-          <span className="breadcrumb-current">{product.name}</span>
+          {product?.category?.name ? (
+            <button onClick={() => navigate('/')} className="breadcrumb-link">
+              {product.category.name}
+            </button>
+          ) : null}
+          {product?.category?.name && <FiChevronRight size={14} className="breadcrumb-separator" />}
+          <span className="breadcrumb-current">{product?.name || 'Produk'}</span>
         </div>
 
         {/* Product Detail */}
@@ -147,12 +190,12 @@ const ProductDetailPage = () => {
           <div className="product-image-section">
             <div className="main-image">
               <img 
-                src={product.images[selectedImageIndex]?.url || 'https://via.placeholder.com/500'} 
-                alt={product.images[selectedImageIndex]?.alt || product.name}
+                src={product?.images?.[selectedImageIndex]?.url || 'https://via.placeholder.com/500'} 
+                alt={product?.images?.[selectedImageIndex]?.alt || product?.name || 'Produk'}
               />
             </div>
             <div className="image-thumbnails">
-              {product.images.map((img, index) => (
+              {product?.images?.map((img, index) => (
                 <div
                   key={index}
                   className={`thumbnail ${selectedImageIndex === index ? 'active' : ''}`}
@@ -165,29 +208,31 @@ const ProductDetailPage = () => {
           </div>
 
           <div className="product-info-section">
-            <span className="product-category-badge">{product.category.name}</span>
-            <h1 className="product-title">{product.name}</h1>
-            <p className="product-brand">Brand: {product.brand}</p>
+            {product?.category?.name && (
+              <span className="product-category-badge">{product.category.name}</span>
+            )}
+            <h1 className="product-title">{product?.name || 'Produk'}</h1>
+            <p className="product-brand">Brand: {product?.brand || '-'}</p>
             
             <div className="product-rating">
               <div className="stars">
                 {[...Array(5)].map((_, i) => (
                   <FiStar 
                     key={i} 
-                    size={16} 
-                    fill={i < Math.floor(product.ratings.average) ? "#FFB800" : "none"} 
+                    fill={i < Math.floor(product?.ratings?.average || 0) ? "#FFB800" : "none"} 
                     color="#FFB800" 
+                    size={16}
                   />
                 ))}
               </div>
               <span className="rating-text">
-                ({product.ratings.average} dari {product.ratings.count} ulasan)
+                ({product?.ratings?.average || 0} dari {product?.ratings?.count || 0} ulasan)
               </span>
             </div>
 
             <div className="product-price-section">
               <span className="product-price">{formatPrice(currentPrice)}</span>
-              {product.priceRange.min !== product.priceRange.max && !selectedSKU && (
+              {product?.priceRange && product.priceRange.min !== product.priceRange.max && !selectedSKU && (
                 <span className="price-range-hint">
                   - {formatPrice(product.priceRange.max)}
                 </span>
@@ -195,7 +240,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Variant Selector */}
-            {product.variantOptions && product.variantOptions.length > 0 && (
+            {product?.variantOptions && product.variantOptions.length > 0 && (
               <div className="product-variants">
                 {product.variantOptions.map((variant) => (
                   <div key={variant.name} className="variant-group">
@@ -206,10 +251,10 @@ const ProductDetailPage = () => {
                       {variant.values.map((option) => {
                         // Check if this variant combination exists in SKUs
                         const testVariants = { ...selectedVariants, [variant.name]: option };
-                        const hasMatchingSKU = product.skus.some(sku => 
+                        const hasMatchingSKU = product?.skus ? product.skus.some(sku => 
                           sku.isActive && 
                           Object.entries(testVariants).every(([k, v]) => sku.variants[k] === v)
-                        );
+                        ) : false;
                         
                         return (
                           <button
@@ -229,12 +274,7 @@ const ProductDetailPage = () => {
             )}
 
             <div className="product-stock">
-              {!selectedSKU ? (
-                <span className="stock-warning">
-                  <FiX size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                  Pilih varian terlebih dahulu
-                </span>
-              ) : isAvailable ? (
+              {isAvailable ? (
                 <span className="in-stock">
                   <FiCheck size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                   Stok tersedia ({currentStock} unit)
@@ -275,21 +315,28 @@ const ProductDetailPage = () => {
         </div>
 
         {/* Product Description */}
-        <div className="product-description-section">
-          <h2>Deskripsi Produk</h2>
-          <div className="description-content">
-            <p>{product.description.long}</p>
-            <h3>Spesifikasi</h3>
-            <ul>
-              <li>Brand: {product.brand}</li>
-              <li>Kategori: {product.category.name} / {product.category.subcategory.name}</li>
-              <li>Berat: {product.physical.weight} {product.physical.weightUnit}</li>
-              <li>Dimensi: {product.physical.dimensions.length} x {product.physical.dimensions.width} x {product.physical.dimensions.height} {product.physical.dimensions.unit}</li>
-              <li>Kondisi: Baru</li>
-              <li>Garansi: 1 tahun</li>
-            </ul>
+        {product && product.description && (
+          <div className="product-description-section">
+            <h2>Deskripsi Produk</h2>
+            <div className="description-content">
+              <p>{product.description.long || product.description.short}</p>
+              <h3>Spesifikasi</h3>
+              <ul>
+                <li>Brand: {product.brand || '-'}</li>
+                {product.category?.name && (
+                  <li>
+                    Kategori: {product.category.name}
+                    {product.category?.subcategory?.name ? ` / ${product.category.subcategory.name}` : ''}
+                  </li>
+                )}
+                <li>Berat: {product.physical?.weight || '-'} {product.physical?.weightUnit || ''}</li>
+                <li>Dimensi: {product.physical?.dimensions ? `${product.physical.dimensions.length} x ${product.physical.dimensions.width} x ${product.physical.dimensions.height} ${product.physical.dimensions.unit}` : '-'}</li>
+                <li>Kondisi: Baru</li>
+                <li>Garansi: 1 tahun</li>
+              </ul>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

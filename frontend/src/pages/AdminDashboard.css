@@ -1,0 +1,138 @@
+.admin-dashboard {
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.admin-dashboard-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.admin-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-dashboard-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.admin-dashboard-desc {
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.admin-dashboard-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+.admin-dashboard-add-btn:hover {
+  background: #1d4ed8;
+}
+
+.admin-dashboard-table {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.admin-dashboard-table th,
+.admin-dashboard-table td {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+}
+
+.admin-dashboard-table th {
+  background: #f3f4f6;
+  color: #1f2937;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-dashboard-table tbody tr {
+  transition: background 0.2s;
+}
+.admin-dashboard-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.admin-dashboard-status-published {
+  background: #d1fae5;
+  color: #047857;
+  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.admin-dashboard-status-draft {
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.admin-dashboard-action-btn {
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.admin-dashboard-action-btn.edit {
+  color: #2563eb;
+}
+.admin-dashboard-action-btn.edit:hover {
+  background: #eff6ff;
+}
+.admin-dashboard-action-btn.delete {
+  color: #dc2626;
+}
+.admin-dashboard-action-btn.delete:hover {
+  background: #fef2f2;
+}
+
+.admin-dashboard-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.admin-dashboard-pagination-btn {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-weight: 500;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.admin-dashboard-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.admin-dashboard-pagination-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}

@@ -21,11 +21,11 @@ router.get('/cities', async (req, res) => {
         { city_id: "22", province_id: "9", province: "Jawa Barat", type: "Kota", city_name: "Bekasi", postal_code: "17000" },
         { city_id: "80", province_id: "9", province: "Jawa Barat", type: "Kota", city_name: "Bogor", postal_code: "16000" },
         { city_id: "107", province_id: "9", province: "Jawa Barat", type: "Kota", city_name: "Cimahi", postal_code: "40500" },
-        { city_id: "155", province_id: "9", province: "Jawa Barat", type: "Kota", city_name: "Depok", postal_code: "16400" },
+        { city_id: "157", province_id: "9", province: "Jawa Barat", type: "Kota", city_name: "Depok", postal_code: "16400" },
         { city_id: "444", province_id: "10", province: "Jawa Tengah", type: "Kota", city_name: "Semarang", postal_code: "50000" },
         { city_id: "445", province_id: "10", province: "Jawa Tengah", type: "Kota", city_name: "Solo", postal_code: "57000" },
         { city_id: "501", province_id: "5", province: "DI Yogyakarta", type: "Kota", city_name: "Yogyakarta", postal_code: "55000" },
-        { city_id: "444", province_id: "11", province: "Jawa Timur", type: "Kota", city_name: "Surabaya", postal_code: "60000" },
+        { city_id: "710", province_id: "11", province: "Jawa Timur", type: "Kota", city_name: "Surabaya", postal_code: "60000" },
         { city_id: "255", province_id: "11", province: "Jawa Timur", type: "Kota", city_name: "Malang", postal_code: "65000" },
       ]
     };

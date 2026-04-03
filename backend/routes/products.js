@@ -3,6 +3,36 @@ const router = express.Router();
 const { getDB } = require('../config/db');
 const { ObjectId } = require('mongodb');
 
+// --- Admin role check middleware (placeholder) ---
+function requireAdmin(req, res, next) {
+  // TODO: Implement real authentication/authorization
+  if (req.user && req.user.role === 'admin') return next();
+  return res.status(403).json({ error: 'Admin access required' });
+}
+
+// --- Input validation and sanitization (placeholder) ---
+function validateProductInput(req, res, next) {
+  // TODO: Implement full validation as per requirements
+  // Example: check required fields
+  const required = [
+    'name', 'brand', 'category', 'price', 'condition',
+    'size', 'color', 'authenticity', 'chest', 'length',
+    'images', 'shippingMethod', 'shippingWeight'
+  ];
+  for (const field of required) {
+    if (!req.body[field]) {
+      return res.status(400).json({ error: `Missing required field: ${field}` });
+    }
+  }
+  next();
+}
+
+// --- Rate limiting (placeholder) ---
+function rateLimit(req, res, next) {
+  // TODO: Implement real rate limiting (e.g., 10 products/hour per admin)
+  next();
+}
+
 // GET all products
 router.get('/', async (req, res) => {
   try {
@@ -41,7 +71,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create new product
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, rateLimit, validateProductInput, async (req, res) => {
   try {
     const db = getDB();
     const result = await db.collection('products').insertOne(req.body);
@@ -54,8 +84,26 @@ router.post('/', async (req, res) => {
   }
 });
 
+// POST /api/products/validate - server-side validation endpoint
+router.post('/validate', (req, res) => {
+  const data = req.body;
+  // Example: repeat required field checks (expand as needed)
+  const required = [
+    'name', 'brand', 'category', 'price', 'condition',
+    'size', 'color', 'authenticity', 'chest', 'length',
+    'images', 'shippingMethod', 'shippingWeight'
+  ];
+  for (const field of required) {
+    if (!data[field]) {
+      return res.status(400).json({ error: `Missing required field: ${field}` });
+    }
+  }
+  // TODO: Add more advanced validation as needed
+  res.json({ valid: true });
+});
+
 // PUT update product
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAdmin, validateProductInput, async (req, res) => {
   try {
     const db = getDB();
     // Try custom string _id first
@@ -63,7 +111,6 @@ router.put('/:id', async (req, res) => {
       { _id: req.params.id },
       { $set: req.body }
     );
-    
     // If not found and id looks like ObjectId, try with ObjectId
     if (result.matchedCount === 0 && ObjectId.isValid(req.params.id)) {
       result = await db.collection('products').updateOne(
@@ -71,11 +118,9 @@ router.put('/:id', async (req, res) => {
         { $set: req.body }
       );
     }
-    
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    
     res.json({ message: 'Product updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });

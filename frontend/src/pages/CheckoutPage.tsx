@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import PaymentPage from './PaymentPage';
 import './CheckoutPage.css';
 
 interface ShippingData {
@@ -123,10 +124,17 @@ const CheckoutPage = () => {
   };
 
   const handlePayment = () => {
-    // Just show summary, no payment yet
-    alert(`Pesanan berhasil dibuat!\n\nTotal: ${formatPrice(total)}\n\nData pesanan:\n- Nama: ${shippingData.name}\n- Email: ${shippingData.email}\n- Alamat: ${shippingData.address}, ${shippingData.city}\n- Kurir: ${selectedShipping?.courier} ${selectedShipping?.service}\n\nSilakan lakukan pembayaran.`);
-    clearCart();
-    navigate('/');
+    // Navigate to payment page with order details
+    navigate('/payment', {
+      state: {
+        amount: total,
+        customerEmail: shippingData.email,
+        customerName: shippingData.name,
+        orderId: `ORDER-${Date.now()}`,
+        shippingData,
+        selectedShipping,
+      }
+    });
   };
 
   const subtotal = getTotalPrice();
@@ -244,9 +252,9 @@ const CheckoutPage = () => {
                       }}
                     />
                     <datalist id="cities-list">
-                      {cities.map((city) => (
+                      {cities.map((city, index) => (
                         <option 
-                          key={city.city_id} 
+                          key={`${city.city_id}-${city.city_name}-${index}`}
                           value={`${city.type} ${city.city_name}`}
                         >
                           {city.province}
