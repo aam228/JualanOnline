@@ -48,7 +48,10 @@ async function startServer() {
     await connectDB();
     
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      const host = process.env.RAILWAY_PUBLIC_DOMAIN
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+        : `http://localhost:${PORT}`;
+      console.log(`🚀 Server running on ${host}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
