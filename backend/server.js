@@ -21,7 +21,13 @@ const app = express();
 const PORT = process.env.PORT;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://jualan-online.vercel.app',
+    'https://jualanonline-production.up.railway.app'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
