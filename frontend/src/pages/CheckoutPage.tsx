@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import PaymentPage from './PaymentPage';
 import './CheckoutPage.css';
 
 interface ShippingData {
@@ -25,7 +24,7 @@ interface ShippingOption {
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cart, getTotalPrice, clearCart } = useCart();
+  const { cart, getTotalPrice } = useCart();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   
