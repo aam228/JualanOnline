@@ -40,6 +40,7 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
 
     addToCart({
       _id: product._id,
+      slug: product.slug,
       name: product.name,
       price: priceToUse,
       image: primaryImage?.url || '',
