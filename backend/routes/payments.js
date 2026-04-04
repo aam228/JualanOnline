@@ -31,8 +31,8 @@ router.post('/create-checkout-session', async (req, res) => {
       }],
       mode: 'payment',
       customer_email: customerEmail,
-      success_url: 'https://your-frontend-domain.com/payment-success',
-      cancel_url: 'https://your-frontend-domain.com/payment-cancel',
+      success_url: 'https://jualanonline.vercel.app/payment-success',
+      cancel_url: 'https://jualanonline.vercel.app/payment-cancel',
       metadata: { orderId, customerName },
     });
     res.json({ id: session.id, url: session.url });
