@@ -143,8 +143,6 @@ const CheckoutPage = () => {
     const stripe: Stripe | null = await stripePromise;
     if (data.url) {
       window.location.href = data.url;
-    } else if (data.id && stripe && typeof stripe.redirectToCheckout === 'function') {
-      await stripe.redirectToCheckout({ sessionId: data.id });
     }
   };
 
