@@ -80,12 +80,6 @@ export interface Product {
 }
 
 export const productAPI = {
-    // Get product by slug
-    getBySlug: async (slug: string): Promise<Product> => {
-      const response = await fetch(`${API_BASE_URL}/products/slug/${slug}`);
-      if (!response.ok) throw new Error('Failed to fetch product by slug');
-      return response.json();
-    },
   // Get all products
   getAll: async (): Promise<Product[]> => {
     const response = await fetch(`${API_BASE_URL}/products`);
