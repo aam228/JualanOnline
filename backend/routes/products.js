@@ -1,3 +1,16 @@
+// GET single product by slug
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const db = getDB();
+    const product = await db.collection('products').findOne({ seoSlug: req.params.slug });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../config/db');

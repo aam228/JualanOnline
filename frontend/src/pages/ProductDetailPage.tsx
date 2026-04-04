@@ -7,7 +7,7 @@ import { BsLightning } from 'react-icons/bs';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
@@ -20,9 +20,8 @@ const ProductDetailPage = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const data = await productAPI.getById(id!);
+        const data = await productAPI.getBySlug(slug!);
         setProduct(data);
-        
         // Initialize with first available variant options
         if (data.variantOptions && data.variantOptions.length > 0) {
           const initialVariants: { [key: string]: string } = {};
@@ -30,7 +29,6 @@ const ProductDetailPage = () => {
             initialVariants[variant.name] = variant.values[0];
           });
           setSelectedVariants(initialVariants);
-          
           // Find matching SKU
           findMatchingSKU(data, initialVariants);
         } else if (data.skus && data.skus.length > 0) {
@@ -43,11 +41,10 @@ const ProductDetailPage = () => {
         setLoading(false);
       }
     };
-
-    if (id) {
+    if (slug) {
       fetchProduct();
     }
-  }, [id]);
+  }, [slug]);
 
   const findMatchingSKU = (prod: Product, variants: { [key: string]: string }) => {
     if (!prod.skus || prod.skus.length === 0) {
