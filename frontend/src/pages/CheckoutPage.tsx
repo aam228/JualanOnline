@@ -140,7 +140,7 @@ const CheckoutPage = () => {
       })
     });
     const data = await response.json();
-    const stripe: Stripe | null = await stripePromise;
+    // const stripe: Stripe | null = await stripePromise;
     if (data.url) {
       window.location.href = data.url;
     }
