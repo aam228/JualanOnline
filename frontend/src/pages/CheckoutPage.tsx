@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './CheckoutPage.css';
@@ -125,7 +125,7 @@ const CheckoutPage = () => {
 
 
   // Stripe Checkout integration
-  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+  const stripePromise: Promise<Stripe | null> = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
   const handleStripeCheckout = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-checkout-session`, {
       method: 'POST',
@@ -139,11 +139,11 @@ const CheckoutPage = () => {
       })
     });
     const data = await response.json();
-    const stripe = await stripePromise;
+    const stripe: Stripe | null = await stripePromise;
     if (data.url) {
       window.location.href = data.url;
-    } else if (data.id) {
-      await stripe?.redirectToCheckout({ sessionId: data.id });
+    } else if (data.id && stripe) {
+      await stripe.redirectToCheckout({ sessionId: data.id });
     }
   };
 
