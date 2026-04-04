@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 
 export interface CartItem {
   _id: string;
+  slug: string;
   name: string;
   price: number;
   image: string;
