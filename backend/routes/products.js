@@ -8,7 +8,8 @@ const { ObjectId } = require('mongodb');
 router.get('/slug/:slug', async (req, res) => {
   try {
     const db = getDB();
-    const product = await db.collection('products').findOne({ seoSlug: req.params.slug });
+    // Cari produk berdasarkan field slug (bukan seoSlug)
+    const product = await db.collection('products').findOne({ slug: req.params.slug });
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
