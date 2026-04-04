@@ -123,3 +123,5 @@ export const productAPI = {
     if (!response.ok) throw new Error('Failed to delete product');
   },
 };
+
+export { API_BASE_URL };
