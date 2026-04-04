@@ -1,3 +1,31 @@
+// Stripe Checkout Session endpoint
+router.post('/create-checkout-session', async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not initialized' });
+    }
+    const { amount, currency = 'idr', customerEmail, customerName, orderId } = req.body;
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: currency,
+          product_data: { name: 'Order #' + (orderId || 'unknown') },
+          unit_amount: Math.round(amount * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      customer_email: customerEmail,
+      success_url: 'https://your-frontend-domain.com/payment-success',
+      cancel_url: 'https://your-frontend-domain.com/payment-cancel',
+      metadata: { orderId, customerName },
+    });
+    res.json({ id: session.id, url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../config/db');

@@ -36,12 +36,20 @@ const ProductList = () => {
     }).format(price);
   };
 
+  // Fix: handle stock for products without variants (skus)
   const getTotalStock = (product: Product) => {
-    return (product.skus ?? []).reduce((sum, sku) => sum + sku.stock, 0);
+    if (product.skus && product.skus.length > 0) {
+      return product.skus.reduce((sum, sku) => sum + sku.stock, 0);
+    }
+    return typeof product.stock === 'number' ? product.stock : 0;
   };
 
   const getAvailableSKUs = (product: Product) => {
-    return (product.skus ?? []).filter(sku => sku.isActive && sku.stock > 0).length;
+    if (product.skus && product.skus.length > 0) {
+      return product.skus.filter(sku => sku.isActive && sku.stock > 0).length;
+    }
+    // If no skus, consider available if stock > 0
+    return (typeof product.stock === 'number' && product.stock > 0) ? 1 : 0;
   };
 
   if (loading) {

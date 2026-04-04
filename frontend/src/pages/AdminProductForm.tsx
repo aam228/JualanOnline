@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiX, FiPlus, FiTrash2, FiImage } from 'react-icons/fi';
 import './AdminProductForm.css';
@@ -68,7 +69,7 @@ export default function AdminProductForm() {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/products/${id}`);
+      const response = await fetch(`${API_BASE_URL}/admin/products/${id}`);
       const data = await response.json();
       setProduct(data);
     } catch (error) {

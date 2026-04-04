@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { Link } from 'react-router-dom';
 import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import './AdminDashboard.css';
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/admin/products?page=${page}&limit=10`);
+      const response = await fetch(`${API_BASE_URL}/admin/products?page=${page}&limit=10`);
       const data = await response.json();
       setProducts(data.data);
       setTotalPages(data.pagination.pages);
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
         method: 'DELETE'
       });
       
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Pagination */}
-            <div className="admin-dashboard-pagination">
+            <div className="admin-dashboard-paginationp">
               <button 
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}

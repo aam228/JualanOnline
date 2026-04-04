@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './CheckoutPage.css';
@@ -122,18 +123,28 @@ const CheckoutPage = () => {
     setStep(3);
   };
 
-  const handlePayment = () => {
-    // Navigate to payment page with order details
-    navigate('/payment', {
-      state: {
+
+  // Stripe Checkout integration
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+  const handleStripeCheckout = async () => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-checkout-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         amount: total,
+        currency: 'idr',
         customerEmail: shippingData.email,
         customerName: shippingData.name,
-        orderId: `ORDER-${Date.now()}`,
-        shippingData,
-        selectedShipping,
-      }
+        orderId: `ORDER-${Date.now()}`
+      })
     });
+    const data = await response.json();
+    const stripe = await stripePromise;
+    if (data.url) {
+      window.location.href = data.url;
+    } else if (data.id) {
+      await stripe?.redirectToCheckout({ sessionId: data.id });
+    }
   };
 
   const subtotal = getTotalPrice();
@@ -359,8 +370,8 @@ const CheckoutPage = () => {
                 <button className="btn btn-secondary" onClick={() => setStep(2)}>
                   Kembali
                 </button>
-                <button className="btn btn-primary" onClick={handlePayment}>
-                  Selesai
+                <button className="btn btn-primary" onClick={handleStripeCheckout}>
+                  Bayar dengan Stripe
                 </button>
               </div>
             </div>
