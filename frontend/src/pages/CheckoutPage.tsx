@@ -126,7 +126,6 @@ const CheckoutPage = () => {
 
 
   // Stripe Checkout integration
-  const stripePromise: Promise<Stripe | null> = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
   const handleStripeCheckout = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-checkout-session`, {
       method: 'POST',
