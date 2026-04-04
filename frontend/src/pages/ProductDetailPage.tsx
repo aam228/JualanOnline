@@ -80,11 +80,13 @@ const ProductDetailPage = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(price);
+    return (price !== undefined && product?.currency)
+      ? new Intl.NumberFormat(product.currency === 'IDR' ? 'id-ID' : 'en-US', {
+          style: 'currency',
+          currency: product.currency,
+          minimumFractionDigits: 0,
+        }).format(price)
+      : 'N/A';
   };
 
   const handleAddToCart = () => {

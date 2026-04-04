@@ -15,7 +15,7 @@ function validateProductInput(req, res, next) {
   // TODO: Implement full validation as per requirements
   // Example: check required fields
   const required = [
-    'name', 'brand', 'category', 'price', 'condition',
+    'name', 'brand', 'category', 'price', 'currency', 'condition',
     'size', 'color', 'authenticity', 'chest', 'length',
     'images', 'shippingMethod', 'shippingWeight'
   ];

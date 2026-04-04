@@ -16,6 +16,7 @@ model Product {
   brand           String
   category        String
   price           Int
+  currency        String   @default("IDR")
   originalPrice   Int?
   condition       Int      // 1-10
   size            String

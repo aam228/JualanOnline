@@ -318,17 +318,36 @@ export default function AdminProductForm() {
                   </div>
                 </div>
                 <div className="admin-product-form-field">
-                  <label className="input-label" htmlFor="product-price">Price (IDR) *</label>
-                  <input
-                    id="product-price"
-                    type="text"
-                    name="price"
-                    value={product.price}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 500000"
-                    className="input"
-                    required
-                  />
+                  <label className="input-label" htmlFor="product-price">Price *</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      id="product-price"
+                      type="text"
+                      name="price"
+                      value={product.price}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 500000"
+                      className="input"
+                      required
+                      style={{ flex: 2 }}
+                    />
+                    <select
+                      id="product-currency"
+                      name="currency"
+                      value={product.currency || 'IDR'}
+                      onChange={handleInputChange}
+                      className="input"
+                      style={{ flex: 1 }}
+                      required
+                    >
+                      <option value="IDR">IDR</option>
+                      <option value="USD">USD</option>
+                      <option value="SGD">SGD</option>
+                      <option value="MYR">MYR</option>
+                      <option value="JPY">JPY</option>
+                      <option value="EUR">EUR</option>
+                    </select>
+                  </div>
                 </div>
                 {/* Stock field for non-variant product */}
                 {(!product.variantOptions || product.variantOptions.length === 0) && (

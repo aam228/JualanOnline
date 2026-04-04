@@ -126,13 +126,14 @@ const CheckoutPage = () => {
   // Stripe Checkout integration
   const handleStripeCheckout = async () => {
     const productSlug = cart[0]?.slug || '';
+    const productCurrency = cart[0]?.currency || 'IDR';
     const currentUrl = window.location.href;
     const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         amount: total,
-        currency: 'idr',
+        currency: productCurrency,
         customerEmail: shippingData.email,
         customerName: shippingData.name,
         orderId: `ORDER-${Date.now()}`,
