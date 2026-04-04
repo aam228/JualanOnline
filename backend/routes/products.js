@@ -8,13 +8,17 @@ const { ObjectId } = require('mongodb');
 router.get('/slug/:slug', async (req, res) => {
   try {
     const db = getDB();
-    // Cari produk berdasarkan field slug (bukan seoSlug)
-    const product = await db.collection('products').findOne({ slug: req.params.slug });
+    const slug = req.params.slug;
+    console.log('[GET /products/slug/:slug] Cari slug:', slug);
+    const product = await db.collection('products').findOne({ slug });
+    console.log('[GET /products/slug/:slug] Hasil query:', product);
     if (!product) {
+      console.warn('[GET /products/slug/:slug] Produk tidak ditemukan:', slug);
       return res.status(404).json({ error: 'Product not found' });
     }
     res.json(product);
   } catch (error) {
+    console.error('[GET /products/slug/:slug] ERROR:', error);
     res.status(500).json({ error: error.message });
   }
 });
