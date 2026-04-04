@@ -19,6 +19,14 @@ router.post('/create-checkout-session', async (req, res) => {
       return res.status(500).json({ error: 'Stripe not initialized' });
     }
     const { amount, currency = 'idr', customerEmail, customerName, orderId } = req.body;
+    // Tentukan base URL frontend (support localhost & production)
+    let frontendBaseUrl = 'https://jualanonline.vercel.app';
+    const origin = req.headers.origin;
+    if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+      frontendBaseUrl = origin;
+    }
+    const productSlug = req.body.productSlug || '';
+    const currentUrl = req.body.currentUrl || '';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -31,9 +39,9 @@ router.post('/create-checkout-session', async (req, res) => {
       }],
       mode: 'payment',
       customer_email: customerEmail,
-      success_url: 'https://jualan-online.vercel.app/payment-success',
-      cancel_url: `https://jualan-online.vercel.app/product/${req.body.productSlug || ''}`,
-      metadata: { orderId, customerName },
+      success_url: `${frontendBaseUrl}/payment-success`,
+      cancel_url: currentUrl || `${frontendBaseUrl}/product/${productSlug}`,
+      metadata: { orderId, customerName, currentUrl },
     });
     res.json({ id: session.id, url: session.url });
   } catch (err) {
