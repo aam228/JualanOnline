@@ -32,7 +32,7 @@ router.post('/create-checkout-session', async (req, res) => {
       mode: 'payment',
       customer_email: customerEmail,
       success_url: 'https://jualanonline.vercel.app/payment-success',
-      cancel_url: `https://jualanonline.vercel.app/product/${orderId || ''}`,
+      cancel_url: `https://jualanonline.vercel.app/product/${req.body.productSlug || ''}`,
       metadata: { orderId, customerName },
     });
     res.json({ id: session.id, url: session.url });
