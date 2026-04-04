@@ -1,3 +1,8 @@
+
+const express = require('express');
+const router = express.Router();
+const { getDB } = require('../config/db');
+
 // CORS preflight handler for all /payments routes
 router.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -35,9 +40,6 @@ router.post('/create-checkout-session', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-const express = require('express');
-const router = express.Router();
-const { getDB } = require('../config/db');
 
 // Initialize Stripe dengan error handling
 let stripe;
