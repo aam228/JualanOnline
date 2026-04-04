@@ -122,7 +122,8 @@ const ProductForm: React.FC = () => {
     // Client-side validation already handled by Zod
     try {
       // Server-side validation: POST to /api/products/validate (to be implemented)
-      const res = await fetch('/api/products/validate', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_BASE_URL}/products/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

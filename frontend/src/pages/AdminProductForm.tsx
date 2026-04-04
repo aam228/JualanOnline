@@ -181,9 +181,10 @@ export default function AdminProductForm() {
     
     try {
       const method = id ? 'PUT' : 'POST';
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
       const url = id 
-        ? `http://localhost:5000/api/admin/products/${id}`
-        : 'http://localhost:5000/api/admin/products';
+        ? `${API_BASE_URL}/admin/products/${id}`
+        : `${API_BASE_URL}/admin/products`;
       
       const response = await fetch(url, {
         method,
