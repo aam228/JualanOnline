@@ -67,6 +67,7 @@ export interface Product {
   images: ProductImage[];
   priceRange: PriceRange;
   price?: number; // Tambahan untuk produk tanpa variant
+  currency?: string;
   variantOptions: VariantOption[];
   skus: SKU[];
   physical: Physical;

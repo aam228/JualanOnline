@@ -28,11 +28,11 @@ const ProductList = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return (price !== undefined && product.currency)
-      ? new Intl.NumberFormat(product.currency === 'IDR' ? 'id-ID' : 'en-US', {
+  const formatPrice = (price: number, currency?: string) => {
+    return (price !== undefined && currency)
+      ? new Intl.NumberFormat(currency === 'IDR' ? 'id-ID' : 'en-US', {
           style: 'currency',
-          currency: product.currency,
+          currency: currency,
           minimumFractionDigits: 0,
         }).format(price)
       : 'N/A';
@@ -112,7 +112,7 @@ const ProductList = () => {
                   <h3 className="product-card-name">{product.name}</h3>
                   <p className="product-card-price">
                     {product.priceRange && typeof product.priceRange.min === 'number'
-                      ? formatPrice(product.priceRange.min)
+                      ? formatPrice(product.priceRange.min, product.currency)
                       : 'N/A'}
                   </p>
                 </div>

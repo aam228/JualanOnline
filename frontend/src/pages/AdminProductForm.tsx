@@ -23,6 +23,7 @@ interface Product {
   isPublished: boolean;
   variantOptions?: Array<{ name: string; value: string }>;
   stock?: number;
+  currency?: string;
 }
 
 const MEASUREMENT_PRESETS = {

@@ -9,6 +9,7 @@ export interface CartItem {
   category: string;
   description: string;
   stock: number;
+  currency?: string;
   quantity: number;
   selectedVariants?: { [key: string]: string };
   sku?: string;

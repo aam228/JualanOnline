@@ -49,6 +49,7 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
       category: product.category.name,
       description: product.description.short,
       stock: stockToUse,
+      currency: product.currency,
       sku: skuCode,
     });
     onClose();

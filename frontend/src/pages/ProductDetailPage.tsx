@@ -130,6 +130,7 @@ const ProductDetailPage = () => {
       category: product.category?.name || '',
       description: typeof product.description === 'object' ? product.description.short : (product.description || ''),
       stock,
+      currency: product.currency,
       selectedVariants: selectedVariantsToSend,
       sku,
     });
