@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import type { Stripe } from '@stripe/stripe-js';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './CheckoutPage.css';
@@ -142,7 +143,7 @@ const CheckoutPage = () => {
     const stripe: Stripe | null = await stripePromise;
     if (data.url) {
       window.location.href = data.url;
-    } else if (data.id && stripe) {
+    } else if (data.id && stripe && typeof stripe.redirectToCheckout === 'function') {
       await stripe.redirectToCheckout({ sessionId: data.id });
     }
   };
