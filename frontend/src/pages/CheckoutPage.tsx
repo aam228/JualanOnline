@@ -133,8 +133,7 @@ const CheckoutPage = () => {
         currency: 'idr',
         customerEmail: shippingData.email,
         customerName: shippingData.name,
-        orderId: `ORDER-${Date.now()}`,
-        productSlug: cart[0]?.slug || ''
+        orderId: `ORDER-${Date.now()}`
       })
     });
     const data = await response.json();

@@ -18,7 +18,7 @@ router.post('/create-checkout-session', async (req, res) => {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe not initialized' });
     }
-    const { amount, currency = 'idr', customerEmail, customerName, orderId, productSlug } = req.body;
+    const { amount, currency = 'idr', customerEmail, customerName, orderId } = req.body;
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -32,7 +32,7 @@ router.post('/create-checkout-session', async (req, res) => {
       mode: 'payment',
       customer_email: customerEmail,
       success_url: 'https://jualanonline.vercel.app/payment-success',
-      cancel_url: `https://jualanonline.vercel.app/product/${productSlug || ''}`,
+      cancel_url: `https://jualanonline.vercel.app/product/${orderId || ''}`,
       metadata: { orderId, customerName },
     });
     res.json({ id: session.id, url: session.url });
