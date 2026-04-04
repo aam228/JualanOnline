@@ -1,3 +1,9 @@
+
+const express = require('express');
+const router = express.Router();
+const { getDB } = require('../config/db');
+const { ObjectId } = require('mongodb');
+
 // GET single product by slug
 router.get('/slug/:slug', async (req, res) => {
   try {
@@ -11,10 +17,6 @@ router.get('/slug/:slug', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-const express = require('express');
-const router = express.Router();
-const { getDB } = require('../config/db');
-const { ObjectId } = require('mongodb');
 
 // --- Admin role check middleware (placeholder) ---
 function requireAdmin(req, res, next) {
