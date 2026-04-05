@@ -346,4 +346,42 @@ async function handlePaymentFailure(paymentIntent) {
   }
 }
 
+// ✅ NEW: Get user orders filtered by email
+router.get('/user-orders/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Security: Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // Fetch orders from database filtered by email
+    const db = getDB();
+    const ordersCollection = db.collection('orders');
+    
+    const orders = await ordersCollection
+      .find({ customerEmail: email })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({
+      email: email,
+      totalOrders: orders.length,
+      orders: orders,
+    });
+  } catch (error) {
+    console.error('Get User Orders Error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to fetch user orders',
+      message: 'Failed to retrieve orders'
+    });
+  }
+});
+
 module.exports = router;

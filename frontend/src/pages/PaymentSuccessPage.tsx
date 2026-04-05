@@ -57,9 +57,10 @@ const PaymentSuccessPage = () => {
   }, [sessionId, sessionIdFromUrl, sessionIdFromStorage, clearCart]);
 
   const formatPrice = (price: number) => {
+    const currency = paymentData?.currency || 'IDR';
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
-      currency: 'IDR',
+      currency: currency,
       minimumFractionDigits: 0,
     }).format(price);
   };
