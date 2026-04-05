@@ -4,22 +4,24 @@ import { useAuth } from '../context/AuthContext';
 import './OrdersPage.css';
 
 interface Order {
-  _id?: string;
+  id?: string;
   orderId: string;
-  stripePaymentIntentId: string;
+  stripeSessionId?: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'failed' | 'paid';
   customerEmail: string;
   customerName: string;
   createdAt: string;
   updatedAt: string;
+  paymentIntent?: string;
+  paymentMethod?: string;
   failureReason?: string;
 }
 
 const OrdersPage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, token } = useAuth();
   
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,8 +34,8 @@ const OrdersPage = () => {
       return;
     }
 
-    // Fetch orders if user is authenticated
-    if (authLoading || !user?.email) {
+    // Fetch orders if user is authenticated and has token
+    if (authLoading || !token) {
       return;
     }
 
@@ -42,15 +44,24 @@ const OrdersPage = () => {
         setLoading(true);
         setError(null);
 
+        // Call authenticated endpoint - server extracts email from JWT token
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/payments/user-orders/${encodeURIComponent(user.email)}`
+          `${import.meta.env.VITE_API_URL}/payments/orders`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch orders');
+          throw new Error(`Failed to fetch orders: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('📦 Orders fetched from Stripe:', data);
         setOrders(data.orders || []);
       } catch (err) {
         console.error('Error fetching orders:', err);
@@ -61,7 +72,7 @@ const OrdersPage = () => {
     };
 
     fetchUserOrders();
-  }, [user?.email, isAuthenticated, authLoading, navigate]);
+  }, [token, isAuthenticated, authLoading, navigate]);
 
   const formatPrice = (price: number, currency: string) => {
     const curr = currency || 'IDR';
@@ -85,6 +96,7 @@ const OrdersPage = () => {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'completed':
+      case 'paid':
         return 'status-completed';
       case 'pending':
         return 'status-pending';
@@ -98,6 +110,7 @@ const OrdersPage = () => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'completed':
+      case 'paid':
         return 'Berhasil';
       case 'pending':
         return 'Menunggu';
@@ -116,7 +129,7 @@ const OrdersPage = () => {
           <h1>Riwayat Pesanan</h1>
           <div className="loading-spinner">
             <div className="spinner"></div>
-            <p>Memuat pesanan Anda...</p>
+            <p>Memuat pesanan Anda dari Stripe...</p>
           </div>
         </div>
       </div>
@@ -150,7 +163,7 @@ const OrdersPage = () => {
             <div className="empty-icon">📦</div>
             <p className="empty-title">Belum ada pesanan</p>
             <p className="empty-subtitle">
-              Anda belum memiliki riwayat pesanan. Mulai berbelanja sekarang!
+              Anda belum memiliki riwayat pesanan di Stripe. Mulai berbelanja sekarang!
             </p>
             <button onClick={() => navigate('/')} className="btn-shop-now">
               Belanja Sekarang
@@ -167,16 +180,16 @@ const OrdersPage = () => {
       <div className="orders-container">
         <h1>Riwayat Pesanan</h1>
         <div className="orders-summary">
-          <p>Total pesanan: <strong>{orders.length}</strong></p>
+          <p>Total pesanan dari Stripe: <strong>{orders.length}</strong></p>
         </div>
 
         <div className="orders-list">
           {orders.map((order) => (
-            <div key={order._id || order.orderId} className="order-card">
+            <div key={order.id || order.orderId} className="order-card">
               <div className="order-header">
                 <div className="order-id-section">
-                  <span className="order-label">Order ID</span>
-                  <span className="order-id">{order.orderId}</span>
+                  <span className="order-label">Stripe Session ID</span>
+                  <span className="order-id">{order.stripeSessionId || order.orderId}</span>
                 </div>
                 <div className={`status-badge ${getStatusBadgeClass(order.status)}`}>
                   {getStatusLabel(order.status)}
@@ -205,6 +218,20 @@ const OrdersPage = () => {
                   <span className="detail-label">Tanggal Pesanan</span>
                   <span className="detail-value">{formatDate(order.createdAt)}</span>
                 </div>
+
+                {order.paymentMethod && (
+                  <div className="detail-item">
+                    <span className="detail-label">Metode Pembayaran</span>
+                    <span className="detail-value capitalize">{order.paymentMethod}</span>
+                  </div>
+                )}
+
+                {order.paymentIntent && (
+                  <div className="detail-item">
+                    <span className="detail-label">Payment Intent ID</span>
+                    <span className="detail-value small">{order.paymentIntent}</span>
+                  </div>
+                )}
               </div>
 
               {order.status === 'failed' && order.failureReason && (
@@ -216,7 +243,7 @@ const OrdersPage = () => {
 
               <div className="order-actions">
                 <button 
-                  onClick={() => navigate(`/product/${order.orderId}`)}
+                  onClick={() => navigate('/')}
                   className="btn-view-details"
                 >
                   Lihat Detail

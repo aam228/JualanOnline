@@ -262,6 +262,17 @@
   color: #667eea;
 }
 
+.detail-value.capitalize {
+  text-transform: capitalize;
+}
+
+.detail-value.small {
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  color: #6b7280;
+}
+
 /* Failure Reason */
 .order-failure-reason {
   background: #fef2f2;

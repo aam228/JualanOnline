@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../config/db');
+const { verifyToken } = require('../middleware/auth');
 
 // CORS preflight handler for all /payments routes
 router.options('*', (req, res) => {
@@ -379,6 +380,79 @@ router.get('/user-orders/:email', async (req, res) => {
     console.error('Get User Orders Error:', error);
     res.status(500).json({ 
       error: error.message || 'Failed to fetch user orders',
+      message: 'Failed to retrieve orders'
+    });
+  }
+});
+
+// ✅ NEW: Get user orders from Stripe (authenticated endpoint)
+router.get('/orders', verifyToken, async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({ 
+        error: 'Stripe not initialized',
+        message: 'STRIPE_SECRET is not properly configured'
+      });
+    }
+
+    // Get user email from authenticated session
+    const userEmail = req.user.email;
+    
+    if (!userEmail) {
+      return res.status(400).json({ error: 'User email not found in token' });
+    }
+
+    try {
+      // Fetch all checkout sessions from Stripe
+      // Limit to 100 per request (default and optimized for most users)
+      const sessions = await stripe.checkout.sessions.list({
+        limit: 100,
+        expand: ['data.payment_intent', 'data.customer_details'],
+      });
+
+      console.log(`📊 Fetched ${sessions.data.length} checkout sessions from Stripe`);
+
+      // Filter sessions by customer email
+      const userOrders = sessions.data
+        .filter(session => {
+          const sessionEmail = session.customer_details?.email || session.customer_email;
+          return sessionEmail && sessionEmail.toLowerCase() === userEmail.toLowerCase();
+        })
+        .map(session => ({
+          id: session.id,
+          orderId: session.id,
+          amount: session.amount_total ? session.amount_total / 100 : 0, // Convert cents to dollars
+          currency: (session.currency || 'idr').toUpperCase(),
+          status: session.payment_status === 'paid' ? 'completed' : session.payment_status || 'pending',
+          customerEmail: session.customer_details?.email || session.customer_email,
+          customerName: session.customer_details?.name || 'Unknown',
+          createdAt: new Date(session.created * 1000).toISOString(),
+          updatedAt: new Date(session.created * 1000).toISOString(),
+          stripeSessionId: session.id,
+          paymentIntent: session.payment_intent?.id,
+          paymentMethod: session.payment_method_types?.[0] || 'card',
+        }))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      console.log(`✅ Found ${userOrders.length} orders for user: ${userEmail}`);
+
+      res.json({
+        email: userEmail,
+        totalOrders: userOrders.length,
+        orders: userOrders,
+        source: 'stripe', // Indicate data comes from Stripe, not database
+      });
+    } catch (stripeError) {
+      console.error('Stripe API Error:', stripeError.message);
+      return res.status(500).json({
+        error: 'Failed to fetch from Stripe',
+        message: stripeError.message,
+      });
+    }
+  } catch (error) {
+    console.error('Get Orders Error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to fetch orders',
       message: 'Failed to retrieve orders'
     });
   }
