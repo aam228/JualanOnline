@@ -350,6 +350,25 @@ export default function AdminProductForm() {
                     </select>
                   </div>
                 </div>
+                {/* Size field */}
+                <div className="admin-product-form-field">
+                  <label className="input-label" htmlFor="product-size">Size (pisahkan dengan koma)</label>
+                  <input
+                    id="product-size"
+                    type="text"
+                    name="size"
+                    value={product.variantOptions && product.variantOptions[0]?.name === 'Size' ? product.variantOptions[0].value : ''}
+                    onChange={e => {
+                      const value = e.target.value;
+                      setProduct(prev => ({
+                        ...prev,
+                        variantOptions: value.trim() ? [{ name: 'Size', value }] : undefined
+                      }));
+                    }}
+                    placeholder="S, M, L, XL"
+                    className="input"
+                  />
+                </div>
                 {/* Stock field for non-variant product */}
                 {(!product.variantOptions || product.variantOptions.length === 0) && (
                   <div className="admin-product-form-field">

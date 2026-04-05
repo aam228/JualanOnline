@@ -111,9 +111,11 @@ const ProductList = () => {
                 <div className="product-info">
                   <h3 className="product-card-name">{product.name}</h3>
                   <p className="product-card-price">
-                    {product.priceRange && typeof product.priceRange.min === 'number'
-                      ? formatPrice(product.priceRange.min, product.currency)
-                      : 'N/A'}
+                    {product.price !== undefined && product.price !== null && !isNaN(Number(product.price)) && product.currency ? (
+                      formatPrice(Number(product.price), product.currency)
+                    ) : product.priceRange && typeof product.priceRange.min === 'number' ? (
+                      formatPrice(product.priceRange.min, product.priceRange.currency)
+                    ) : 'N/A'}
                   </p>
                 </div>
                   {(totalStock === 0 || availableSKUs === 0) && (

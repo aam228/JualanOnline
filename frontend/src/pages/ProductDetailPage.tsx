@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productAPI, type Product, type SKU } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { FiShoppingCart, FiCheck, FiX, FiStar, FiChevronRight } from 'react-icons/fi';
+import { FiShoppingCart, FiChevronRight } from 'react-icons/fi';
 import { BsLightning } from 'react-icons/bs';
 import './ProductDetailPage.css';
 
@@ -216,23 +216,7 @@ const ProductDetailPage = () => {
               <span className="product-category-badge">{product.category.name}</span>
             )}
             <h1 className="product-title">{product?.name || 'Produk'}</h1>
-            <p className="product-brand">Brand: {product?.brand || '-'}</p>
-            
-            <div className="product-rating">
-              <div className="stars">
-                {[...Array(5)].map((_, i) => (
-                  <FiStar 
-                    key={i} 
-                    fill={i < Math.floor(product?.ratings?.average || 0) ? "#FFB800" : "none"} 
-                    color="#FFB800" 
-                    size={16}
-                  />
-                ))}
-              </div>
-              <span className="rating-text">
-                ({product?.ratings?.average || 0} dari {product?.ratings?.count || 0} ulasan)
-              </span>
-            </div>
+            <p className="product-brand">{product?.brand || '-'}</p>
 
             <div className="product-price-section">
               <span className="product-price">{formatPrice(currentPrice)}</span>
@@ -277,19 +261,22 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            <div className="product-stock">
-              {isAvailable ? (
-                <span className="in-stock">
-                  <FiCheck size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                  Stok tersedia ({currentStock} unit)
-                </span>
-              ) : (
-                <span className="out-of-stock">
-                  <FiX size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                  Stok habis
-                </span>
-              )}
-            </div>
+            {/* Dropdown Size */}
+            {product?.variantOptions && product.variantOptions.length > 0 && product.variantOptions.some(v => v.name.toLowerCase() === 'size') && (
+              <div style={{ margin: '16px 0' }}>
+                <label htmlFor="size-select" style={{ fontWeight: 600, marginRight: 8 }}>Size</label>
+                <select
+                  id="size-select"
+                  value={selectedVariants['Size'] || product.variantOptions.find(v => v.name.toLowerCase() === 'size')?.values[0]}
+                  onChange={e => handleVariantChange('Size', e.target.value)}
+                  style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #E5E7EB', fontSize: 15 }}
+                >
+                  {product.variantOptions.find(v => v.name.toLowerCase() === 'size')?.values.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="product-actions">
               <button
@@ -306,25 +293,8 @@ const ProductDetailPage = () => {
               </button>
             </div>
 
-            <div className="product-features">
-              <h3>Keunggulan Produk</h3>
-              <ul>
-                <li><FiCheck size={16} color="#00A550" style={{ marginRight: '6px' }} />Garansi resmi 1 tahun</li>
-                <li><FiCheck size={16} color="#00A550" style={{ marginRight: '6px' }} />Gratis ongkir untuk pembelian di atas 1 juta</li>
-                <li><FiCheck size={16} color="#00A550" style={{ marginRight: '6px' }} />Bisa COD (Cash on Delivery)</li>
-                <li><FiCheck size={16} color="#00A550" style={{ marginRight: '6px' }} />Produk original 100%</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Description */}
-        {product && product.description && (
-          <div className="product-description-section">
-            <h2>Deskripsi Produk</h2>
-            <div className="description-content">
-              <p>{product.description.long || product.description.short}</p>
-              <h3>Spesifikasi</h3>
+            {/* Spesifikasi Produk */}
+            <div className="product-spec-section">
               <ul>
                 <li>Brand: {product.brand || '-'}</li>
                 {product.category?.name && (
@@ -338,6 +308,16 @@ const ProductDetailPage = () => {
                 <li>Kondisi: Baru</li>
                 <li>Garansi: 1 tahun</li>
               </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Description */}
+        {product && product.description && (
+          <div className="product-description-section">
+            <h2>Deskripsi Produk</h2>
+            <div className="description-content">
+              <p>{product.description.long || product.description.short}</p>
             </div>
           </div>
         )}

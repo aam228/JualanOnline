@@ -1,14 +1,28 @@
 import { useState, useEffect } from 'react';
+import Pagination from '../components/Pagination';
 import { API_BASE_URL } from '../services/api';
 import { Link } from 'react-router-dom';
 import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import './AdminDashboard.css';
 
+interface PriceRange {
+  min: number;
+  max: number;
+  currency: string;
+}
+
+interface Sku {
+  price: number;
+  currency: string;
+}
+
 interface Product {
   _id: string;
   name: string;
   brand: string;
-  price: number;
+  price?: number;
+  priceRange?: PriceRange;
+  skus?: Sku[];
   condition: string;
   isPublished: boolean;
   createdAt: string;
@@ -97,7 +111,15 @@ export default function AdminDashboard() {
                       <tr key={product._id}>
                         <td>{product.name}</td>
                         <td>{product.brand || '-'}</td>
-                        <td>Rp {(product.price || 0).toLocaleString('id-ID')}</td>
+                        <td>
+                          {product.priceRange ? (
+                            `${product.priceRange.currency} ${product.priceRange.max.toLocaleString('id-ID')}`
+                          ) : (product.price !== undefined && product.price !== null && !isNaN(Number(product.price))) ? (
+                            `${(product as any).currency ? (product as any).currency : 'Rp'} ${Number(product.price).toLocaleString('id-ID')}`
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         <td>
                           <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
                             {product.condition || 'N/A'}
@@ -132,25 +154,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Pagination */}
-            <div className="admin-dashboard-paginationp">
-              <button 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="admin-dashboard-pagination-btn"
-              >
-                Previous
-              </button>
-              <span className="text-gray-600 font-medium">
-                Page {page} of {totalPages}
-              </span>
-              <button 
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="admin-dashboard-pagination-btn"
-              >
-                Next
-              </button>
-            </div>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </>
         )}
       </div>
