@@ -223,74 +223,56 @@ const OrdersPage = () => {
           </div>
         )}
 
-        <div className="orders-list">
-          {orders.map((order, index) => (
-            <div key={order.id || order.orderId} className="order-card">
-              {/* Status Badge Top */}
-              <div className="order-status-section">
-                <div className={`status-badge ${getStatusBadgeClass(order.status)}`}>
-                  <span className="status-icon">{getStatusIcon(order.status)}</span>
-                  <span className="status-text">{getStatusLabel(order.status)}</span>
-                </div>
-              </div>
-
-              {/* Order Identifier */}
-              <div className="order-number">
-                Pesanan #{String(index + 1).padStart(3, '0')}
-              </div>
-
-              {/* Total Amount - PROMINENT */}
-              <div className="order-amount-section">
-                <span className="amount-label">Total Pembayaran</span>
-                <span className="amount-value">{formatPrice(order.amount, order.currency)}</span>
-              </div>
-
-              {/* Order Details Grid */}
-              <div className="order-details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Tanggal Pesanan</span>
-                  <span className="detail-value">{formatDate(order.createdAt)}</span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Metode Pembayaran</span>
-                  <span className="detail-value capitalize">{formatPaymentMethod(order.paymentMethod)}</span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Email Pelanggan</span>
-                  <span className="detail-value">{order.customerEmail}</span>
-                </div>
-              </div>
-
-              {/* Failure Reason - Only if failed */}
-              {order.status === 'failed' && order.failureReason && (
-                <div className="order-failure-reason">
-                  <span className="failure-label">⚠️ Alasan Pembayaran Gagal</span>
-                  <span className="failure-text">{order.failureReason}</span>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="order-actions">
-                {order.status === 'failed' ? (
-                  <button 
-                    onClick={() => navigate('/checkout')}
-                    className="btn-retry-payment"
-                  >
-                    Ulangi Pembayaran
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => navigate('/')}
-                    className="btn-view-details"
-                  >
-                    Lihat Pesanan
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="orders-table-wrapper">
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Order ID</th>
+                <th>Tanggal Transaksi</th>
+                <th>Metode Pembayaran</th>
+                <th>Total Pembayaran</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order, index) => (
+                <tr key={order.id || order.orderId} className={index % 2 === 0 ? 'even' : 'odd'}>
+                  <td className="col-no">{index + 1}</td>
+                  <td className="col-order-id">{order.orderId}</td>
+                  <td className="col-date">{formatDate(order.createdAt)}</td>
+                  <td className="col-method">{formatPaymentMethod(order.paymentMethod)}</td>
+                  <td className="col-amount">{formatPrice(order.amount, order.currency)}</td>
+                  <td className="col-status">
+                    <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
+                      <span className="status-icon">{getStatusIcon(order.status)}</span>
+                      <span className="status-text">{getStatusLabel(order.status)}</span>
+                    </span>
+                  </td>
+                  <td className="col-action">
+                    {order.status === 'failed' ? (
+                      <button 
+                        onClick={() => navigate('/checkout')}
+                        className="btn-action-small btn-retry"
+                        title="Ulangi pembayaran"
+                      >
+                        Ulangi
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => navigate('/')}
+                        className="btn-action-small btn-view"
+                        title="Lihat pesanan"
+                      >
+                        Lihat
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         <div className="orders-footer">
