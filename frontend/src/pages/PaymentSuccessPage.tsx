@@ -1,42 +1,60 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { paymentAPI } from '../services/payment';
+import { useCart } from '../context/CartContext';
 import './PaymentSuccessPage.css';
 
 const PaymentSuccessPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { clearCart } = useCart();  // ✅ Clear cart after payment
   
   const [loading, setLoading] = useState(true);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const paymentIntentId = location.state?.paymentIntentId;
+  // ✅ FIX: Get session ID from URL query params or localStorage
+  const queryParams = new URLSearchParams(location.search);
+  const sessionIdFromUrl = queryParams.get('session_id');
+  const sessionIdFromStorage = localStorage.getItem('stripeSessionId');
+  const sessionId = sessionIdFromUrl || sessionIdFromStorage;
 
   useEffect(() => {
-    if (!paymentIntentId) {
-      setError('No payment data found');
+    if (!sessionId) {
+      setError('No payment session found');
       setLoading(false);
       return;
     }
 
     const fetchPaymentStatus = async () => {
       try {
-        const data = await paymentAPI.getPaymentStatus(paymentIntentId);
+        // Fetch session details from backend
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/session/${sessionId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch payment session');
+        }
+        const data = await response.json();
         setPaymentData(data);
         
-        if (data.status !== 'succeeded') {
+        if (data.status === 'complete') {
+          // ✅ Clear cart on successful payment
+          clearCart();
+        } else {
           setError(`Payment status: ${data.status}`);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch payment status');
+        setError(err instanceof Error ? err.message : 'Failed to verify payment');
       } finally {
         setLoading(false);
       }
     };
 
     fetchPaymentStatus();
-  }, [paymentIntentId]);
+    
+    // Clear session ID from localStorage
+    if (sessionIdFromUrl) {
+      localStorage.removeItem('stripeSessionId');
+    }
+  }, [sessionId, sessionIdFromUrl, sessionIdFromStorage, clearCart]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -67,7 +85,7 @@ const PaymentSuccessPage = () => {
     );
   }
 
-  if (error || !paymentData || paymentData.status !== 'succeeded') {
+  if (error || !paymentData || paymentData.status !== 'complete') {
     return (
       <div className="payment-success-container">
         <div className="success-card failed">
@@ -95,7 +113,7 @@ const PaymentSuccessPage = () => {
         <div className="order-details">
           <div className="detail-row">
             <span className="label">Order ID</span>
-            <span className="value">{paymentData.order?.orderId || paymentIntentId}</span>
+            <span className="value">{paymentData.order?.orderId || sessionId}</span>
           </div>
           
           <div className="detail-row">
@@ -106,7 +124,7 @@ const PaymentSuccessPage = () => {
           <div className="detail-row">
             <span className="label">Status Pembayaran</span>
             <span className="value status-badge">
-              {paymentData.status === 'succeeded' ? 'Berhasil' : paymentData.status}
+              {paymentData.status === 'complete' ? 'Berhasil' : paymentData.status}
             </span>
           </div>
 

@@ -192,8 +192,12 @@ const CheckoutPage = () => {
       })
     });
     const data = await response.json();
-    if (data.url) {
+    if (data.url && data.id) {
+      // ✅ Store session ID in localStorage as backup
+      localStorage.setItem('stripeSessionId', data.id);
       window.location.href = data.url;
+    } else {
+      setPopupError('Failed to create payment session');
     }
   };
 

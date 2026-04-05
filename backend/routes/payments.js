@@ -39,7 +39,7 @@ router.post('/create-checkout-session', async (req, res) => {
       }],
       mode: 'payment',
       customer_email: customerEmail,
-      success_url: `${frontendBaseUrl}/payment-success`,
+      success_url: `${frontendBaseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: currentUrl || `${frontendBaseUrl}/product/${productSlug}`,
       metadata: { orderId, customerName, currentUrl },
     });
@@ -211,6 +211,58 @@ router.get('/payment-status/:paymentIntentId', async (req, res) => {
     res.status(500).json({ 
       error: error.message,
       message: 'Failed to get payment status'
+    });
+  }
+});
+
+// ✅ NEW: Get Stripe Session Details
+router.get('/session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID required' });
+    }
+
+    // Retrieve session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['payment_intent', 'line_items'],
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Get order from database
+    let orderData = null;
+    try {
+      const db = getDB();
+      const ordersCollection = db.collection('orders');
+      const metadata = session.metadata || {};
+      orderData = await ordersCollection.findOne({ 
+        orderId: metadata.orderId 
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+    }
+
+    // Return session details
+    res.json({
+      sessionId: session.id,
+      status: session.payment_status === 'paid' ? 'complete' : session.payment_status,
+      paymentStatus: session.payment_status,
+      amount: (session.amount_total || 0) / 100,
+      currency: session.currency?.toUpperCase(),
+      customerEmail: session.customer_email,
+      paymentIntent: session.payment_intent?.id,
+      order: orderData || null,
+      metadata: session.metadata || {},
+    });
+  } catch (error) {
+    console.error('Get Session Error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to get session details',
+      message: 'Failed to retrieve payment session'
     });
   }
 });
