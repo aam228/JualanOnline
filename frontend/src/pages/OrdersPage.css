@@ -197,6 +197,7 @@
   padding: 1rem;
   border-bottom: 1px solid #f3f4f6;
   color: #1f2937;
+  text-align: start;
 }
 
 /* Table Row Colors - Zebra Striping */
@@ -216,9 +217,9 @@
 .col-no {
   width: 60px;
   max-width: 60px;
-  text-align: center;
   color: #9ca3af;
   font-weight: 500;
+  text-align: start;
 }
 
 .col-order-id {
@@ -230,18 +231,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: start;
 }
 
 .col-date {
   max-width: 160px;
   font-size: 13px;
   color: #4b5563;
+  text-align: start;
 }
 
 .col-method {
   max-width: 150px;
   font-size: 13px;
   color: #4b5563;
+  text-align: start;
 }
 
 .col-amount {
@@ -249,18 +253,18 @@
   font-weight: 700;
   color: #667eea;
   font-size: 15px;
-  text-align: right;
+  text-align: start;
 }
 
 .col-status {
   max-width: 160px;
-  text-align: center;
+  text-align: start;
 }
 
 .col-action {
   max-width: 100px;
   width: 100px;
-  text-align: center;
+  text-align: start;
 }
 
 /* Status Badge in Table */
