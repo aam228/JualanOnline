@@ -22,6 +22,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
+import FAQPage from './pages/FAQPage';
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -45,6 +46,7 @@ function App() {
                 <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
                 <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
                 <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                <Route path="/faq" element={<FAQPage />} />
                 <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/admin/products" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/admin/products/new" element={<AdminRoute><AdminProductForm /></AdminRoute>} />
