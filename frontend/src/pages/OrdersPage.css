@@ -1,16 +1,11 @@
 .orders-page {
   min-height: 100vh;
-  padding: 2rem 1rem;
-  background: #f9fafb;
 }
 
 .orders-container {
   max-width: 900px;
   margin: 0 auto;
-  background: white;
   border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .orders-container h1 {

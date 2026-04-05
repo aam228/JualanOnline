@@ -111,11 +111,11 @@ const OrdersPage = () => {
     switch (status) {
       case 'completed':
       case 'paid':
-        return 'Pembayaran Berhasil';
+        return 'Berhasil';
       case 'pending':
         return 'Menunggu Pembayaran';
       case 'failed':
-        return 'Pembayaran Gagal';
+        return 'Gagal';
       default:
         return status;
     }
@@ -205,23 +205,6 @@ const OrdersPage = () => {
     <div className="orders-page">
       <div className="orders-container">
         <h1>Riwayat Pesanan</h1>
-        {orders.length > 0 && (
-          <div className="orders-summary">
-            <div className="summary-item">
-              <span className="summary-label">Total Pesanan</span>
-              <span className="summary-value">{orders.length}</span>
-            </div>
-            <div className="summary-item">
-              <span className="summary-label">Total Pembelian</span>
-              <span className="summary-value">
-                {formatPrice(
-                  orders.reduce((sum, order) => sum + order.amount, 0),
-                  orders[0]?.currency || 'IDR'
-                )}
-              </span>
-            </div>
-          </div>
-        )}
 
         <div className="orders-table-wrapper">
           <table className="orders-table">
@@ -233,7 +216,6 @@ const OrdersPage = () => {
                 <th>Metode Pembayaran</th>
                 <th>Total Pembayaran</th>
                 <th>Status</th>
-                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -249,25 +231,6 @@ const OrdersPage = () => {
                       <span className="status-icon">{getStatusIcon(order.status)}</span>
                       <span className="status-text">{getStatusLabel(order.status)}</span>
                     </span>
-                  </td>
-                  <td className="col-action">
-                    {order.status === 'failed' ? (
-                      <button 
-                        onClick={() => navigate('/checkout')}
-                        className="btn-action-small btn-retry"
-                        title="Ulangi pembayaran"
-                      >
-                        Ulangi
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => navigate('/')}
-                        className="btn-action-small btn-view"
-                        title="Lihat pesanan"
-                      >
-                        Lihat
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))}
