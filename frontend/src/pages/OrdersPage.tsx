@@ -111,14 +111,40 @@ const OrdersPage = () => {
     switch (status) {
       case 'completed':
       case 'paid':
-        return 'Berhasil';
+        return 'Pembayaran Berhasil';
       case 'pending':
-        return 'Menunggu';
+        return 'Menunggu Pembayaran';
       case 'failed':
-        return 'Gagal';
+        return 'Pembayaran Gagal';
       default:
         return status;
     }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+      case 'paid':
+        return '✓';
+      case 'pending':
+        return '⏱';
+      case 'failed':
+        return '✕';
+      default:
+        return '•';
+    }
+  };
+
+  const formatPaymentMethod = (method?: string) => {
+    if (!method) return 'Metode tidak tersedia';
+    const methodMap: { [key: string]: string } = {
+      'card': 'Kartu Kredit/Debit',
+      'id_bank_transfer': 'Transfer Bank',
+      'bank_transfer': 'Transfer Bank',
+      'wallet': 'E-Wallet',
+      'ideal': 'iDEAL (Netherlands)',
+    };
+    return methodMap[method.toLowerCase()] || method;
   };
 
   // Loading state
@@ -129,7 +155,7 @@ const OrdersPage = () => {
           <h1>Riwayat Pesanan</h1>
           <div className="loading-spinner">
             <div className="spinner"></div>
-            <p>Memuat pesanan Anda dari Stripe...</p>
+            <p>Memuat riwayat pesanan Anda...</p>
           </div>
         </div>
       </div>
@@ -160,10 +186,10 @@ const OrdersPage = () => {
         <div className="orders-container">
           <h1>Riwayat Pesanan</h1>
           <div className="orders-empty">
-            <div className="empty-icon">📦</div>
+            <div className="empty-icon">🛍️</div>
             <p className="empty-title">Belum ada pesanan</p>
             <p className="empty-subtitle">
-              Anda belum memiliki riwayat pesanan di Stripe. Mulai berbelanja sekarang!
+              Anda belum pernah melakukan pembelian. Mulai berbelanja sekarang untuk melihat riwayat pesanan Anda.
             </p>
             <button onClick={() => navigate('/')} className="btn-shop-now">
               Belanja Sekarang
@@ -179,81 +205,87 @@ const OrdersPage = () => {
     <div className="orders-page">
       <div className="orders-container">
         <h1>Riwayat Pesanan</h1>
-        <div className="orders-summary">
-          <p>Total pesanan dari Stripe: <strong>{orders.length}</strong></p>
-        </div>
+        {orders.length > 0 && (
+          <div className="orders-summary">
+            <div className="summary-item">
+              <span className="summary-label">Total Pesanan</span>
+              <span className="summary-value">{orders.length}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Total Pembelian</span>
+              <span className="summary-value">
+                {formatPrice(
+                  orders.reduce((sum, order) => sum + order.amount, 0),
+                  orders[0]?.currency || 'IDR'
+                )}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="orders-list">
-          {orders.map((order) => (
+          {orders.map((order, index) => (
             <div key={order.id || order.orderId} className="order-card">
-              <div className="order-header">
-                <div className="order-id-section">
-                  <span className="order-label">Stripe Session ID</span>
-                  <span className="order-id">{order.stripeSessionId || order.orderId}</span>
-                </div>
+              {/* Status Badge Top */}
+              <div className="order-status-section">
                 <div className={`status-badge ${getStatusBadgeClass(order.status)}`}>
-                  {getStatusLabel(order.status)}
+                  <span className="status-icon">{getStatusIcon(order.status)}</span>
+                  <span className="status-text">{getStatusLabel(order.status)}</span>
                 </div>
               </div>
 
+              {/* Order Identifier */}
+              <div className="order-number">
+                Pesanan #{String(index + 1).padStart(3, '0')}
+              </div>
+
+              {/* Total Amount - PROMINENT */}
+              <div className="order-amount-section">
+                <span className="amount-label">Total Pembayaran</span>
+                <span className="amount-value">{formatPrice(order.amount, order.currency)}</span>
+              </div>
+
+              {/* Order Details Grid */}
               <div className="order-details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Jumlah Pembayaran</span>
-                  <span className="detail-value amount">
-                    {formatPrice(order.amount, order.currency)}
-                  </span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Nama Pelanggan</span>
-                  <span className="detail-value">{order.customerName}</span>
-                </div>
-
-                <div className="detail-item">
-                  <span className="detail-label">Email</span>
-                  <span className="detail-value">{order.customerEmail}</span>
-                </div>
-
                 <div className="detail-item">
                   <span className="detail-label">Tanggal Pesanan</span>
                   <span className="detail-value">{formatDate(order.createdAt)}</span>
                 </div>
 
-                {order.paymentMethod && (
-                  <div className="detail-item">
-                    <span className="detail-label">Metode Pembayaran</span>
-                    <span className="detail-value capitalize">{order.paymentMethod}</span>
-                  </div>
-                )}
+                <div className="detail-item">
+                  <span className="detail-label">Metode Pembayaran</span>
+                  <span className="detail-value capitalize">{formatPaymentMethod(order.paymentMethod)}</span>
+                </div>
 
-                {order.paymentIntent && (
-                  <div className="detail-item">
-                    <span className="detail-label">Payment Intent ID</span>
-                    <span className="detail-value small">{order.paymentIntent}</span>
-                  </div>
-                )}
+                <div className="detail-item">
+                  <span className="detail-label">Email Pelanggan</span>
+                  <span className="detail-value">{order.customerEmail}</span>
+                </div>
               </div>
 
+              {/* Failure Reason - Only if failed */}
               {order.status === 'failed' && order.failureReason && (
                 <div className="order-failure-reason">
-                  <span className="failure-label">Alasan Gagal:</span>
+                  <span className="failure-label">⚠️ Alasan Pembayaran Gagal</span>
                   <span className="failure-text">{order.failureReason}</span>
                 </div>
               )}
 
+              {/* Action Buttons */}
               <div className="order-actions">
-                <button 
-                  onClick={() => navigate('/')}
-                  className="btn-view-details"
-                >
-                  Lihat Detail
-                </button>
-                {order.status === 'failed' && (
+                {order.status === 'failed' ? (
                   <button 
                     onClick={() => navigate('/checkout')}
                     className="btn-retry-payment"
                   >
-                    Coba Pembayaran Ulang
+                    Ulangi Pembayaran
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => navigate('/')}
+                    className="btn-view-details"
+                  >
+                    Lihat Pesanan
                   </button>
                 )}
               </div>
