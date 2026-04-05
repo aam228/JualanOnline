@@ -1,0 +1,463 @@
+.contact-page {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding: 3rem 1rem;
+}
+
+.contact-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.contact-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.contact-header h1 {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+  letter-spacing: -1px;
+}
+
+.contact-subtitle {
+  font-size: 18px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* About Store Section */
+.about-store {
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  margin-bottom: 3rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.about-store h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1.5rem 0;
+}
+
+.about-content p {
+  font-size: 16px;
+  color: #4b5563;
+  line-height: 1.8;
+  margin: 0 0 1rem 0;
+}
+
+.about-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Contact Information Section */
+.contact-info-section {
+  margin-bottom: 4rem;
+}
+
+.contact-info-section h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.contact-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  border: 1px solid #e5e7eb;
+}
+
+.contact-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+.contact-icon {
+  font-size: 40px;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.contact-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.75rem 0;
+}
+
+.contact-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #667eea;
+  text-decoration: none;
+  margin: 0 0 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.contact-value:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.contact-card .contact-value {
+  word-break: break-word;
+}
+
+.contact-desc {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+  margin-top: 0.5rem;
+}
+
+/* Contact Form Section */
+.contact-form-section {
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  margin-bottom: 3rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.contact-form-section h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 2rem 0;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #1f2937;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #9ca3af;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-status {
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.form-status.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.form-status.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.9rem 2rem;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit:active {
+  transform: translateY(0);
+}
+
+/* Quick Contact Section */
+.quick-contact {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.quick-contact h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+}
+
+.quick-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-link {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.quick-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: white;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contact-page {
+    padding: 2rem 1rem;
+  }
+
+  .contact-container {
+    max-width: 100%;
+  }
+
+  .contact-header {
+    margin-bottom: 3rem;
+  }
+
+  .contact-header h1 {
+    font-size: 36px;
+  }
+
+  .contact-subtitle {
+    font-size: 16px;
+  }
+
+  .about-store {
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .about-store h2 {
+    font-size: 24px;
+    margin-bottom: 1rem;
+  }
+
+  .about-content p {
+    font-size: 15px;
+  }
+
+  .contact-info-section h2 {
+    font-size: 24px;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-cards {
+    gap: 1.5rem;
+  }
+
+  .contact-card {
+    padding: 1.5rem;
+  }
+
+  .contact-form-section {
+    padding: 2rem;
+  }
+
+  .contact-form-section h2 {
+    font-size: 24px;
+  }
+
+  .contact-form {
+    gap: 1.25rem;
+  }
+
+  .quick-contact {
+    padding: 1.5rem;
+  }
+
+  .quick-links {
+    gap: 0.75rem;
+  }
+
+  .quick-link {
+    padding: 0.65rem 1.25rem;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .contact-header {
+    margin-bottom: 2rem;
+  }
+
+  .contact-header h1 {
+    font-size: 28px;
+  }
+
+  .contact-subtitle {
+    font-size: 14px;
+  }
+
+  .about-store {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .about-store h2 {
+    font-size: 20px;
+    margin-bottom: 1rem;
+  }
+
+  .about-content p {
+    font-size: 14px;
+    margin-bottom: 0.75rem;
+  }
+
+  .contact-info-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .contact-info-section h2 {
+    font-size: 20px;
+    margin-bottom: 1.25rem;
+  }
+
+  .contact-cards {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  .contact-card {
+    padding: 1.25rem;
+  }
+
+  .contact-icon {
+    font-size: 32px;
+    margin-bottom: 0.75rem;
+  }
+
+  .contact-card h3 {
+    font-size: 16px;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-value {
+    font-size: 15px;
+  }
+
+  .contact-form-section {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .contact-form-section h2 {
+    font-size: 20px;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 0.65rem 0.875rem;
+    font-size: 14px;
+  }
+
+  .btn-submit {
+    padding: 0.8rem 1.5rem;
+    font-size: 14px;
+  }
+
+  .quick-contact {
+    padding: 1.25rem;
+    margin-bottom: 0;
+  }
+
+  .quick-contact h3 {
+    font-size: 16px;
+    margin-bottom: 1rem;
+  }
+
+  .quick-links {
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
+  .quick-link {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 13px;
+  }
+}
