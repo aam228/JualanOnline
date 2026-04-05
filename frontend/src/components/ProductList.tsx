@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productAPI, type Product } from '../services/api';
+import Pagination from './Pagination';
 import './ProductList.css';
+
+const PRODUCTS_PER_PAGE = 32;
 
 const ProductList = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -54,6 +59,20 @@ const ProductList = () => {
     return (typeof product.stock === 'number' && product.stock > 0) ? 1 : 0;
   };
 
+  // Handle page change and scroll to top
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    if (gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const visibleProducts = products.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <section className="product-list-section">
@@ -78,9 +97,9 @@ const ProductList = () => {
 
   return (
     <section className="product-list-section">
-      <div className="products-grid">
-        {products.length > 0 ? (
-          products.map(product => {
+      <div className="products-grid" ref={gridRef}>
+        {visibleProducts.length > 0 ? (
+          visibleProducts.map(product => {
             const totalStock = getTotalStock(product);
             const availableSKUs = getAvailableSKUs(product);
             const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
@@ -130,6 +149,14 @@ const ProductList = () => {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </section>
   );
 };

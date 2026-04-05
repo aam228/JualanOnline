@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Pagination from '../components/Pagination';
+import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../services/api';
 import { Link } from 'react-router-dom';
 import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
@@ -29,10 +31,13 @@ interface Product {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const { token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -41,12 +46,33 @@ export default function AdminDashboard() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/admin/products?page=${page}&limit=10`);
+      setError('');
+      const response = await fetch(`${API_BASE_URL}/admin/products?page=${page}&limit=10`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      
+      if (response.status === 401) {
+        setError('Unauthorized. Please login again.');
+        navigate('/login');
+        return;
+      }
+      
+      if (response.status === 403) {
+        setError('You do not have permission to access this page.');
+        navigate('/');
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      
       const data = await response.json();
       setProducts(data.data);
       setTotalPages(data.pagination.pages);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setError('Failed to load products');
     } finally {
       setLoading(false);
     }
@@ -57,14 +83,24 @@ export default function AdminDashboard() {
     
     try {
       const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
+      
+      if (response.status === 401 || response.status === 403) {
+        setError('Unauthorized. Please login again.');
+        navigate('/login');
+        return;
+      }
       
       if (response.ok) {
         setProducts(products.filter(p => p._id !== id));
+      } else {
+        setError('Failed to delete product');
       }
     } catch (error) {
       console.error('Error deleting product:', error);
+      setError('Failed to delete product');
     }
   };
 
@@ -89,6 +125,10 @@ export default function AdminDashboard() {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-gray-500">Loading...</div>
+          </div>
+        ) : error ? (
+          <div className="admin-error-message">
+            <p>{error}</p>
           </div>
         ) : (
           <>

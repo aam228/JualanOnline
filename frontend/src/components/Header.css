@@ -98,6 +98,261 @@
   position: relative;
 }
 
+/* Auth Buttons */
+.auth-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-btn {
+  background: transparent;
+  color: #4A4A4A;
+  border: 1px solid #D0D0D0;
+}
+
+.login-btn:hover {
+  background: #F3F4F6;
+  color: #000;
+}
+
+.register-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+}
+
+.register-btn:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Admin Link */
+.admin-link-btn {
+  padding: 0.5rem 1rem;
+  background: #fbbf24;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-link-btn:hover {
+  background: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* User Menu */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.user-menu-btn:hover {
+  background: #D8D8D8;
+  color: #000;
+}
+
+.user-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #D0D0D0;
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.user-menu-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+.user-menu-divider {
+  height: 1px;
+  background: #E5E7EB;
+}
+
+.user-menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-menu-item:hover {
+  background: #F3F4F6;
+  color: #000;
+}
+
+.user-menu-item.logout {
+  color: #dc2626;
+  border-top: 1px solid #E5E7EB;
+}
+
+.user-menu-item.logout:hover {
+  background: #fee2e2;
+}
+
+/* Search Dropdown */
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #D0D0D0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-results {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+}
+
+.search-result-item {
+  padding: 0;
+}
+
+.search-result-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.search-result-btn:hover {
+  background: #F3F4F6;
+}
+
+.result-image {
+  width: 40px;
+  height: 40px;
+  background: #F3F4F6;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.result-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1F2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-price {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 2px;
+}
+
+.search-loading,
+.search-no-results {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.search-loading {
+  color: #eab308;
+  font-weight: 500;
+}
+
+/* Scrollbar styling for dropdown */
+.search-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb {
+  background: #D0D0D0;
+  border-radius: 3px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #A0A0A0;
+}
+
 /* Tablet */
 @media (max-width: 992px) {
   .main-header {

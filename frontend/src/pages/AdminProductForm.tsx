@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../services/api';
-import { useParams, useNavigate } from 'react-router-dom';
 import { FiX, FiPlus, FiTrash2, FiImage } from 'react-icons/fi';
 import './AdminProductForm.css';
 
@@ -24,6 +25,8 @@ interface Product {
   variantOptions?: Array<{ name: string; value: string }>;
   stock?: number;
   currency?: string;
+  year?: string;
+  category?: string;
 }
 
 const MEASUREMENT_PRESETS = {
@@ -46,6 +49,7 @@ const CONDITIONS = [
 export default function AdminProductForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(!!id);
   const [product, setProduct] = useState<Product>({
     name: '',
@@ -59,7 +63,8 @@ export default function AdminProductForm() {
     defects: [],
     shipping: { method: 'Indonesian Post', estimatedDays: '3-5' },
     tags: [],
-    isPublished: false
+    isPublished: false,
+    year: ''
   });
 
   useEffect(() => {
@@ -72,7 +77,12 @@ export default function AdminProductForm() {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/products/${id}`);
       const data = await response.json();
-      setProduct(data);
+      setProduct(prev => ({
+        ...prev,
+        ...data,
+        year: data.year ?? '',
+        category: data.category ?? '',
+      }));
     } catch (error) {
       console.error('Error fetching product:', error);
     } finally {
@@ -182,16 +192,24 @@ export default function AdminProductForm() {
     
     try {
       const method = id ? 'PUT' : 'POST';
-      const API_BASE_URL = import.meta.env.VITE_API_URL;
       const url = id 
         ? `${API_BASE_URL}/admin/products/${id}`
         : `${API_BASE_URL}/admin/products`;
       
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(product)
       });
+      
+      if (response.status === 401 || response.status === 403) {
+        alert('Unauthorized. Please login again.');
+        navigate('/login');
+        return;
+      }
       
       if (response.ok) {
         alert(id ? 'Product updated successfully!' : 'Product created successfully!');
@@ -304,6 +322,19 @@ export default function AdminProductForm() {
                     />
                   </div>
                   <div className="admin-product-form-field">
+                    <label className="input-label" htmlFor="product-category">Category</label>
+                    <input
+                      id="product-category"
+                      type="text"
+                      name="category"
+                      value={product.category || ''}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Fashion, Electronics, etc."
+                      className="input"
+                      required
+                    />
+                  </div>
+                  <div className="admin-product-form-field">
                     <label className="input-label" htmlFor="product-condition">Condition</label>
                     <select
                       id="product-condition"
@@ -350,22 +381,15 @@ export default function AdminProductForm() {
                     </select>
                   </div>
                 </div>
-                {/* Size field */}
                 <div className="admin-product-form-field">
-                  <label className="input-label" htmlFor="product-size">Size (pisahkan dengan koma)</label>
+                  <label className="input-label" htmlFor="product-year">Year</label>
                   <input
-                    id="product-size"
+                    id="product-year"
                     type="text"
-                    name="size"
-                    value={product.variantOptions && product.variantOptions[0]?.name === 'Size' ? product.variantOptions[0].value : ''}
-                    onChange={e => {
-                      const value = e.target.value;
-                      setProduct(prev => ({
-                        ...prev,
-                        variantOptions: value.trim() ? [{ name: 'Size', value }] : undefined
-                      }));
-                    }}
-                    placeholder="S, M, L, XL"
+                    name="year"
+                    value={product.year || ''}
+                    onChange={e => setProduct(prev => ({ ...prev, year: e.target.value }))}
+                    placeholder="e.g., Bebas isi tahun atau teks"
                     className="input"
                   />
                 </div>

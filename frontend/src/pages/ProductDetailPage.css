@@ -1,3 +1,144 @@
+.main-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+  color: var(--dark);
+}
+
+.main-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 1.2rem;
+}
+
+.size-dropdown-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.1rem;
+}
+
+.size-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.size-dropdown {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1.5px solid #E5E7EB;
+  font-size: 15px;
+  background: #fff;
+  min-width: 110px;
+}
+
+.main-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+
+
+
+/* --- BUTTON BASE --- */
+.btn-add-to-cart,
+.btn-buy-now {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 0;
+  padding: 1rem 0;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(.4,0,.2,1), color 0.2s cubic-bezier(.4,0,.2,1), border 0.2s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(.4,0,.2,1), box-shadow 0.2s cubic-bezier(.4,0,.2,1);
+  outline: none;
+  box-shadow: none;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+  .btn-add-to-cart, .btn-buy-now {
+    font-size: 14px;
+    padding: 0.85rem 0;
+    min-height: 44px;
+  }
+}
+
+
+/* --- PRIMARY: BUY NOW --- */
+.btn-buy-now {
+  background: var(--primary, #111);
+  color: #fff;
+  border: 2px solid var(--primary, #111);
+  z-index: 1;
+}
+.btn-buy-now:hover:not(:disabled),
+.btn-buy-now:focus-visible {
+  opacity: 0.82;
+}
+.btn-buy-now:active:not(:disabled) {
+  opacity: 0.7;
+}
+.btn-buy-now:focus-visible {
+  outline: 2.5px solid #222;
+  outline-offset: 2px;
+}
+.btn-buy-now:disabled {
+  background: #E5E7EB;
+  color: #9CA3AF;
+  border-color: #E5E7EB;
+  cursor: not-allowed;
+}
+
+/* --- SECONDARY: ADD TO CART --- */
+.btn-add-to-cart {
+  background: transparent;
+  border: 1px grey solid;
+  color: grey;
+  z-index: 0;
+}
+.btn-add-to-cart:hover:not(:disabled),
+.btn-add-to-cart:focus-visible {
+  opacity: 0.82;
+}
+.btn-add-to-cart:active:not(:disabled) {
+  opacity: 0.7;
+}
+.btn-add-to-cart:focus-visible {
+  outline: 2.5px solid #222;
+  outline-offset: 2px;
+}
+.btn-add-to-cart:disabled {
+  background: #E5E7EB;
+  color: #9CA3AF;
+  border-color: #E5E7EB;
+  cursor: not-allowed;
+}
+
+.product-shopify-info {
+  background: none;
+  color: #444;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 15px;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+.product-shopify-info b {
+  font-weight: 700;
+  color: #222;
+}
+.measurements-list {
+  margin-left: 1.2rem;
+  margin-top: 0.2rem;
+}
 /* Hilangkan bullet pada spesifikasi produk */
 .product-spec-section ul {
   list-style: none;
@@ -8,7 +149,6 @@
   margin-bottom: 13px;
 }
 .product-detail-page {
-  padding: 1.5rem 0 3rem;
   min-height: 100vh;
 }
 
@@ -146,6 +286,7 @@
   color: var(--dark);
   line-height: 1.4;
   margin: 0;
+  text-align: left;
 }
 
 .product-rating {
@@ -165,7 +306,7 @@
 }
 
 .product-price-section {
-  padding: 0.5rem 0;
+  margin-top: 15px;
 }
 
 .product-price {
@@ -261,7 +402,7 @@
   font-size: 14px;
 }
 
-.product-brand {
+.product-brand .include-tax {
   color: var(--gray);
   font-size: 14px;
   margin: 0.25rem 0 0.5rem 0;
@@ -279,32 +420,9 @@
   margin: 1.25rem 0;
 }
 
-.btn-add-to-cart,
-.btn-buy-now {
-  flex: 1;
-  padding: 0.85rem 1.5rem;
-  font-size: 15px;
-  font-weight: 600;
-}
 
-.btn-buy-now {
-  background: transparent;
-  border: 1.5px solid var(--primary);
-  color: var(--primary);
-}
 
-.btn-buy-now:hover {
-  background: var(--primary);
-  color: white;
-}
 
-.btn-add-to-cart:disabled,
-.btn-buy-now:disabled {
-  background: #E5E7EB;
-  color: #9CA3AF;
-  cursor: not-allowed;
-  border-color: #E5E7EB;
-}
 
 
 .product-description-section {
@@ -433,6 +551,7 @@
 
   .product-title {
     font-size: 20px;
+    text-align: left;
   }
 
   .product-price {
@@ -446,9 +565,6 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-  .product-detail-page {
-    padding: 1rem 0 2rem;
-  }
 
   .breadcrumb {
     font-size: 12px;
@@ -475,6 +591,7 @@
 
   .product-title {
     font-size: 18px;
+    text-align: left;
   }
 
   .product-category-badge {
@@ -522,9 +639,6 @@
 
 /* Small Mobile - Referensi Tokopedia/Shopee */
 @media (max-width: 480px) {
-  .product-detail-page {
-    padding: 0.75rem 0 1.5rem;
-  }
 
   .breadcrumb {
     font-size: 11px;

@@ -16,6 +16,7 @@ const paymentsRouter = require('./routes/payments');
 const uploadRouter = require('./routes/upload');
 const flawsRouter = require('./routes/flaws');
 const rajaOngkirRouter = require('./routes/rajaongkir');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -36,6 +37,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Anjay E-commerce API' });
 });
 
+app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/admin/products', adminProductsRouter);
 app.use('/api/shipping', shippingRouter);

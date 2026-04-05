@@ -18,10 +18,10 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
+      currency: 'USD',
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
@@ -35,7 +35,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
     <div className="cart-overlay" onClick={onClose}>
       <div className="cart-sidebar" onClick={(e) => e.stopPropagation()}>
         <div className="cart-header">
-          <h2><FiShoppingCart size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Keranjang Belanja</h2>
+          <h2><FiShoppingCart size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Shopping Cart</h2>
           <button className="cart-close" onClick={onClose}>
             <FiX size={20} />
           </button>
@@ -45,7 +45,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
           {cart.length === 0 ? (
             <div className="cart-empty">
               <FiShoppingCart size={64} color="#9CA3AF" />
-              <p>Keranjang masih kosong</p>
+              <p>Your cart is empty</p>
             </div>
           ) : (
             <>
@@ -103,7 +103,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                 </div>
                 <button className="btn btn-checkout" onClick={handleCheckout}>Checkout</button>
                 <button className="btn btn-clear" onClick={clearCart}>
-                  Kosongkan Keranjang
+                  Clear Cart
                 </button>
               </div>
             </>

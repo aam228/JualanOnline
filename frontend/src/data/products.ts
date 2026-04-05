@@ -2,10 +2,9 @@ import type { Product } from '../types/Product';
 
 export const products: Product[] = [
   {
-    id: 1,
     name: 'Laptop Gaming Pro',
     price: 15000000,
-    image: '💻',
+    images: [{ url: '💻' }],
     icon: '💻',
     category: 'Elektronik',
     description: 'Laptop gaming dengan spesifikasi tinggi, RAM 16GB, SSD 512GB',
@@ -17,10 +16,9 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 2,
     name: 'Smartphone Premium',
     price: 8000000,
-    image: '📱',
+    images: [{ url: '📱' }],
     icon: '📱',
     category: 'Elektronik',
     description: 'Smartphone flagship dengan kamera 108MP dan layar AMOLED',
@@ -32,10 +30,9 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 3,
     name: 'Headphone Wireless',
     price: 1500000,
-    image: '🎧',
+    images: [{ url: '🎧' }],
     icon: '🎧',
     category: 'Audio',
     description: 'Headphone wireless dengan noise cancelling dan bass boost',
@@ -46,10 +43,9 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 4,
     name: 'Smartwatch Sport',
     price: 2500000,
-    image: '⌚',
+    images: [{ url: '⌚' }],
     icon: '⌚',
     category: 'Wearable',
     description: 'Smartwatch dengan fitur tracking olahraga dan monitor kesehatan',
@@ -61,10 +57,9 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 5,
     name: 'Keyboard Mechanical',
     price: 1200000,
-    image: '⌨️',
+    images: [{ url: '⌨️' }],
     icon: '⌨️',
     category: 'Aksesoris',
     description: 'Keyboard mechanical RGB dengan switch blue',
@@ -76,10 +71,9 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 6,
     name: 'Mouse Gaming RGB',
     price: 500000,
-    image: '🖱️',
+    images: [{ url: '🖱️' }],
     icon: '🖱️',
     category: 'Aksesoris',
     description: 'Mouse gaming dengan DPI hingga 16000 dan RGB lighting',
@@ -90,10 +84,9 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 7,
     name: 'Monitor 4K UHD',
     price: 5000000,
-    image: '🖥️',
+    images: [{ url: '🖥️' }],
     icon: '🖥️',
     category: 'Elektronik',
     description: 'Monitor 27 inch 4K dengan refresh rate 144Hz',
@@ -105,7 +98,6 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 8,
     name: 'Webcam HD Pro',
     price: 800000,
     image: '📷',
@@ -119,7 +111,6 @@ export const products: Product[] = [
     ]
   },
   {
-    id: 9,
     name: 'Speaker Bluetooth',
     price: 600000,
     image: '🔊',

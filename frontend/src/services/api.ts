@@ -78,6 +78,9 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   stock?: number; // Tambahan untuk produk tanpa variant
+  measurements?: Record<string, string>;
+  year?: number;
+  condition?: string;
 }
 
 export const productAPI = {
@@ -122,6 +125,52 @@ export const productAPI = {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete product');
+  },
+};
+
+export const authAPI = {
+  // Register new user
+  register: async (name: string, email: string, password: string): Promise<{ user: any; token: string }> => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    if (!response.ok) throw new Error('Registration failed');
+    return response.json();
+  },
+
+  // Login user
+  login: async (email: string, password: string): Promise<{ user: any; token: string }> => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!response.ok) throw new Error('Login failed');
+    return response.json();
+  },
+
+  // Verify current user session
+  getMe: async (token: string): Promise<{ user: any }> => {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to verify user');
+    return response.json();
+  },
+
+  // Logout user
+  logout: async (token: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) throw new Error('Logout failed');
   },
 };
 

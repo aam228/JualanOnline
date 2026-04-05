@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getDB } = require('../config/db');
 const { ObjectId } = require('mongodb');
+const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 // GET all products (admin view)
 router.get('/', async (req, res) => {
@@ -56,7 +57,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create new product (Vintage/Bekas Type)
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, requireAdmin, async (req, res) => {
   try {
     const db = getDB();
     const {
@@ -128,7 +129,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update product
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     const db = getDB();
     const updateData = req.body;
@@ -163,7 +164,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE product
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     const db = getDB();
     let result = await db.collection('products').deleteOne({ _id: req.params.id });
