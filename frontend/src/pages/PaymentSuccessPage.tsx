@@ -12,6 +12,8 @@ const PaymentSuccessPage = () => {
   const [paymentData, setPaymentData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [waUrl, setWaUrl] = useState('');
+  const [waWarning, setWaWarning] = useState<string | null>(null);
+  const waOpenedRef = useRef(false);
   const hasRedirectedRef = useRef(false);
 
   // ✅ FIX: Get session ID from URL query params or localStorage
@@ -77,7 +79,7 @@ const PaymentSuccessPage = () => {
     });
   };
 
-  const sellerWaNumber = import.meta.env.VITE_SELLER_WHATSAPP_NUMBER || '';
+  const sellerWaNumber = String(import.meta.env.VITE_SELLER_WHATSAPP_NUMBER || '').replace(/[^\d]/g, '');
 
   const buildWhatsAppMessage = () => {
     const order = paymentData?.order || {};
@@ -129,17 +131,37 @@ const PaymentSuccessPage = () => {
       return;
     }
 
-    if (!sellerWaNumber || hasRedirectedRef.current) {
+    if (!sellerWaNumber) {
+      setWaWarning('Nomor WhatsApp penjual belum dikonfigurasi di environment frontend (VITE_SELLER_WHATSAPP_NUMBER).');
+      return;
+    }
+
+    if (hasRedirectedRef.current) {
       return;
     }
 
     const message = buildWhatsAppMessage();
     const targetUrl = `https://wa.me/${sellerWaNumber}?text=${encodeURIComponent(message)}`;
     setWaUrl(targetUrl);
-
-    hasRedirectedRef.current = true;
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }, [loading, error, paymentData, sellerWaNumber]);
+
+  useEffect(() => {
+    if (!waUrl || waOpenedRef.current) {
+      return;
+    }
+
+    waOpenedRef.current = true;
+    hasRedirectedRef.current = true;
+
+    const timeoutId = window.setTimeout(() => {
+      const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
+      if (!popup) {
+        setWaWarning('Browser menahan auto-open. Klik tombol "Buka WhatsApp Sekarang" di bawah.');
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [waUrl]);
 
   if (loading) {
     return (
@@ -176,6 +198,7 @@ const PaymentSuccessPage = () => {
         <h1>Pembayaran Berhasil!</h1>
         <p className="status-message">Terima kasih telah melakukan pembayaran</p>
         <p className="status-message">Anda akan diarahkan otomatis ke WhatsApp untuk mengirim data transaksi.</p>
+        {waWarning && <p className="status-message">{waWarning}</p>}
 
         {/* Order Details */}
         <div className="order-details">
@@ -229,9 +252,9 @@ const PaymentSuccessPage = () => {
         {/* Action Buttons */}
         <div className="action-buttons">
           {waUrl && (
-            <button onClick={() => window.open(waUrl, '_blank', 'noopener,noreferrer')} className="btn-orders">
+            <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn-orders">
               Buka WhatsApp Sekarang
-            </button>
+            </a>
           )}
           <button onClick={() => navigate('/orders')} className="btn-orders">
             Lihat Pesanan Saya
