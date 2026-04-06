@@ -1,34 +1,6 @@
-import { useState } from 'react';
 import './ContactPage.css';
 
 const ContactPage = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Simple validation
-    if (!name || !email || !message) {
-      setSubmitStatus('error');
-      setTimeout(() => setSubmitStatus('idle'), 3000);
-      return;
-    }
-
-    // Here you would typically send the form data to a backend API
-    // For now, we'll just show a success message
-    console.log('Form submitted:', { name, email, message });
-    
-    setSubmitStatus('success');
-    setName('');
-    setEmail('');
-    setMessage('');
-    
-    setTimeout(() => setSubmitStatus('idle'), 3000);
-  };
-
   return (
     <div className="contact-page">
       <div className="contact-container">

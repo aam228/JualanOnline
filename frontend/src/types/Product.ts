@@ -13,8 +13,8 @@ export interface ProductMeasurements {
 }
 
 export interface Product {
-  _id: string;
-  slug: string;
+  _id?: string;
+  slug?: string;
   name: string;
   brand?: string;
   type?: string;

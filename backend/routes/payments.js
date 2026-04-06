@@ -327,6 +327,11 @@ router.get('/session/:sessionId', async (req, res) => {
       console.error('Database error:', dbError);
     }
 
+    const normalizedPaymentIntentId =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id;
+
     // Return session details
     res.json({
       sessionId: session.id,
@@ -335,7 +340,8 @@ router.get('/session/:sessionId', async (req, res) => {
       amount: (session.amount_total || 0) / 100,
       currency: session.currency?.toUpperCase(),
       customerEmail: session.customer_email,
-      paymentIntent: session.payment_intent?.id,
+      paymentIntent: normalizedPaymentIntentId,
+      paymentIntentId: normalizedPaymentIntentId,
       order: orderData || null,
       metadata: session.metadata || {},
     });

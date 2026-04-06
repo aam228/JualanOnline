@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { productAPI, type Product, type SKU } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { FiShoppingCart, FiChevronRight } from 'react-icons/fi';
-import { BsLightning } from 'react-icons/bs';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {

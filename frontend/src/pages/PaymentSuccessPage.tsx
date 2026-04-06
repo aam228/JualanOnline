@@ -83,16 +83,8 @@ const PaymentSuccessPage = () => {
     const order = paymentData?.order || {};
     const shippingAddress = order.shippingAddress || {};
     const items = Array.isArray(order.items) ? order.items : [];
-    const addressLine = [
-      shippingAddress.address1,
-      shippingAddress.address2,
-      shippingAddress.city,
-      shippingAddress.state,
-      shippingAddress.country,
-      shippingAddress.postalCode,
-    ]
-      .filter(Boolean)
-      .join(', ');
+    const paidAtRaw = order?.paidAt || order?.createdAt;
+    const paidAtText = paidAtRaw ? formatDate(paidAtRaw) : '-';
 
     const itemLines = items.length
       ? items
@@ -105,23 +97,30 @@ const PaymentSuccessPage = () => {
       : '- Data item belum tersedia';
 
     return [
-      'Halo admin, saya sudah melakukan pembayaran.',
+      'PAYMENT_VALIDATION_DATA',
+      '=======================',
       '',
-      `Order ID: ${order?.orderId || paymentData?.sessionId || '-'}`,
-      `Session ID: ${paymentData?.sessionId || '-'}`,
-      `Nama: ${order?.customerName || '-'}`,
-      `Email: ${order?.customerEmail || paymentData?.customerEmail || '-'}`,
-      `Telepon: ${shippingAddress.phone || '-'}`,
-      `Total: ${formatPrice(paymentData?.amount || 0)}`,
-      `Region: ${order?.shippingRegion || '-'}`,
+      'PAYMENT',
+      `payment_intent_id: ${paymentData?.paymentIntentId || paymentData?.paymentIntent || order?.stripePaymentIntentId || '-'}`,
+      `paid_at: ${paidAtText || '-'}`,
+      `total_amount: ${formatPrice(paymentData?.amount || 0)}`,
+      `shipping_cost: ${formatPrice(order?.shippingCost || 0)}`,
       '',
-      'Alamat Pengiriman:',
-      addressLine || '-',
+      'CUSTOMER',
+      `name: ${order?.customerName || '-'}`,
+      `email: ${order?.customerEmail || paymentData?.customerEmail || '-'}`,
+      `phone: ${shippingAddress.phone || '-'}`,
       '',
-      'Detail Produk:',
-      itemLines,
+      'SHIPPING',
+      `country: ${shippingAddress.country || '-'}`,
+      `province/state: ${shippingAddress.state || '-'}`,
+      `city: ${shippingAddress.city || '-'}`,
+      `postal_code: ${shippingAddress.postalCode || '-'}`,
+      `address_line_1: ${shippingAddress.address1 || '-'}`,
+      `address_line_2: ${shippingAddress.address2 || '-'}`,
       '',
-      'Mohon diproses untuk pengiriman. Terima kasih.',
+      'ITEMS',
+      itemLines || '-',
     ].join('\n');
   };
 
@@ -139,7 +138,7 @@ const PaymentSuccessPage = () => {
     setWaUrl(targetUrl);
 
     hasRedirectedRef.current = true;
-    window.location.href = targetUrl;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }, [loading, error, paymentData, sellerWaNumber]);
 
   if (loading) {
@@ -230,7 +229,7 @@ const PaymentSuccessPage = () => {
         {/* Action Buttons */}
         <div className="action-buttons">
           {waUrl && (
-            <button onClick={() => window.location.href = waUrl} className="btn-orders">
+            <button onClick={() => window.open(waUrl, '_blank', 'noopener,noreferrer')} className="btn-orders">
               Buka WhatsApp Sekarang
             </button>
           )}
