@@ -10,6 +10,7 @@ const ErrorPopup = ({ message, onClose }: { message: string, onClose: () => void
 );
 
 import { useNavigate, useLocation } from 'react-router-dom';
+import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './CheckoutPage.css';
@@ -44,6 +45,7 @@ const CheckoutPage = () => {
   const directProduct = location.state && location.state.product ? location.state.product : null;
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
   
 
   // Checkout form state
@@ -184,8 +186,7 @@ const CheckoutPage = () => {
     }
   };
 
-  // Stripe Checkout integration
-  const handleStripeCheckout = async () => {
+  const buildCheckoutPayload = () => {
     const productSlug = cart[0]?.slug || '';
     const productCurrency = 'USD';
     const currentUrl = window.location.href;
@@ -210,31 +211,73 @@ const CheckoutPage = () => {
       notes: form.notes,
     };
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-checkout-session`, {
+    return {
+      amount: total,
+      currency: productCurrency,
+      customerName: form.name,
+      customerEmail: user?.email || '',
+      orderId: `ORDER-${Date.now()}`,
+      productSlug,
+      currentUrl,
+      items: checkoutItems,
+      shippingAddress,
+      shippingRegion: selectedRegion,
+      shippingCost,
+    };
+  };
+
+  // Stripe Checkout integration
+  const handleStripeCheckout = async () => {
+    setLoading(true);
+    try {
+      const payload = buildCheckoutPayload();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/stripe/create-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (data.url && data.id) {
+        localStorage.setItem('stripeSessionId', data.id);
+        window.location.href = data.url;
+        return;
+      }
+      setPopupError(data?.error || 'Failed to create Stripe payment session');
+    } catch (err) {
+      setPopupError(err instanceof Error ? err.message : 'Failed to create Stripe payment session');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createPaypalOrder = async () => {
+    const payload = buildCheckoutPayload();
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/paypal/create-order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: total,
-        currency: productCurrency,
-        customerName: form.name,
-        customerEmail: user?.email || '',
-        orderId: `ORDER-${Date.now()}`,
-        productSlug,
-        currentUrl,
-        items: checkoutItems,
-        shippingAddress,
-        shippingRegion: selectedRegion,
-        shippingCost,
-      })
+      body: JSON.stringify(payload)
     });
+
     const data = await response.json();
-    if (data.url && data.id) {
-      // ✅ Store session ID in localStorage as backup
-      localStorage.setItem('stripeSessionId', data.id);
-      window.location.href = data.url;
-    } else {
-      setPopupError('Failed to create payment session');
+    if (!response.ok || !data?.orderID) {
+      throw new Error(data?.error || 'Failed to create PayPal order');
     }
+    return data.orderID as string;
+  };
+
+  const capturePaypalOrder = async (orderID: string) => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/paypal/capture-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderID })
+    });
+
+    const data = await response.json();
+    if (!response.ok || data?.status !== 'complete') {
+      throw new Error(data?.error || 'PayPal payment capture failed');
+    }
+    return data;
   };
 
 
@@ -497,14 +540,81 @@ const CheckoutPage = () => {
                 placeholder="Shipping method will appear here"
               />
             </div>
+
+            <div style={{ margin: '20px 0 8px 0' }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, display: 'block' }}>Select Payment Method</label>
+              <div style={{ display: 'grid', gap: 10 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="stripe"
+                    checked={paymentMethod === 'stripe'}
+                    onChange={() => setPaymentMethod('stripe')}
+                  />
+                  Credit Card (Stripe)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="paypal"
+                    checked={paymentMethod === 'paypal'}
+                    onChange={() => setPaymentMethod('paypal')}
+                  />
+                  PayPal
+                </label>
+              </div>
+            </div>
+
             <div className="payment-actions">
               <button className="btn btn-secondary" onClick={() => setStep(1)}>
                 Back
               </button>
-              <button className="btn btn-primary" onClick={handleStripeCheckout}>
-                Pay with Stripe
-              </button>
+              {paymentMethod === 'stripe' && (
+                <button className="btn btn-primary" onClick={handleStripeCheckout} disabled={loading}>
+                  {loading ? 'Processing...' : 'Pay with Stripe'}
+                </button>
+              )}
             </div>
+
+            {paymentMethod === 'paypal' && (
+              <div style={{ marginTop: 16 }}>
+                {import.meta.env.VITE_PAYPAL_CLIENT_ID ? (
+                  <PayPalScriptProvider
+                    options={{
+                      clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID,
+                      currency: 'USD',
+                      intent: 'capture',
+                    }}
+                  >
+                    <PayPalButtons
+                      style={{ layout: 'vertical', shape: 'rect', label: 'paypal' }}
+                      createOrder={async () => createPaypalOrder()}
+                      onApprove={async (data) => {
+                        try {
+                          const approvedOrderId = data.orderID;
+                          if (!approvedOrderId) {
+                            throw new Error('PayPal order ID not found');
+                          }
+                          await capturePaypalOrder(approvedOrderId);
+                          navigate(`/payment-success?provider=paypal&orderID=${approvedOrderId}`);
+                        } catch (err) {
+                          setPopupError(err instanceof Error ? err.message : 'PayPal payment failed');
+                        }
+                      }}
+                      onError={() => {
+                        setPopupError('PayPal checkout encountered an error');
+                      }}
+                    />
+                  </PayPalScriptProvider>
+                ) : (
+                  <div className="error-message">
+                    <p>PayPal is not configured. Set VITE_PAYPAL_CLIENT_ID in frontend environment.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

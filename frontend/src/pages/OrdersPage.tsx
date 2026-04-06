@@ -7,6 +7,11 @@ interface Order {
   id?: string;
   orderId: string;
   stripeSessionId?: string;
+  paypalOrderId?: string;
+  paypalCaptureId?: string;
+  transactionId?: string;
+  paymentProvider?: 'stripe' | 'paypal';
+  paymentStatus?: string;
   amount: number;
   currency: string;
   status: 'pending' | 'completed' | 'failed' | 'paid';
@@ -139,6 +144,7 @@ const OrdersPage = () => {
     if (!method) return 'Metode tidak tersedia';
     const methodMap: { [key: string]: string } = {
       'card': 'Kartu Kredit/Debit',
+      'paypal': 'PayPal',
       'id_bank_transfer': 'Transfer Bank',
       'bank_transfer': 'Transfer Bank',
       'wallet': 'E-Wallet',
@@ -217,7 +223,9 @@ const OrdersPage = () => {
                 <th>No</th>
                 <th>Order ID</th>
                 <th>Tanggal Transaksi</th>
+                <th>Provider</th>
                 <th>Metode Pembayaran</th>
+                <th>Transaction ID</th>
                 <th>Total Pembayaran</th>
                 <th>Status</th>
               </tr>
@@ -228,7 +236,9 @@ const OrdersPage = () => {
                   <td className="col-no">{index + 1}</td>
                   <td className="col-order-id" onClick={() => copyToClipboard(order.orderId)} title="Klik untuk copy Order ID">{order.orderId}</td>
                   <td className="col-date">{formatDate(order.createdAt)}</td>
+                  <td className="col-method">{(order.paymentProvider || 'stripe').toUpperCase()}</td>
                   <td className="col-method">{formatPaymentMethod(order.paymentMethod)}</td>
+                  <td className="col-order-id" title="Transaction ID">{order.transactionId || '-'}</td>
                   <td className="col-amount">{formatPrice(order.amount, order.currency)}</td>
                   <td className="col-status">
                     <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>

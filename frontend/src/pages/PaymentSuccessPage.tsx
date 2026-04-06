@@ -16,49 +16,74 @@ const PaymentSuccessPage = () => {
   const waOpenedRef = useRef(false);
   const hasRedirectedRef = useRef(false);
 
-  // ✅ FIX: Get session ID from URL query params or localStorage
+  // Query params: Stripe uses session_id, PayPal uses orderID
   const queryParams = new URLSearchParams(location.search);
+  const providerFromUrl = (queryParams.get('provider') || '').toLowerCase();
   const sessionIdFromUrl = queryParams.get('session_id');
+  const paypalOrderIdFromUrl = queryParams.get('orderID') || queryParams.get('token');
   const sessionIdFromStorage = localStorage.getItem('stripeSessionId');
-  const sessionId = sessionIdFromUrl || sessionIdFromStorage;
+  const activeProvider = providerFromUrl === 'paypal' || paypalOrderIdFromUrl ? 'paypal' : 'stripe';
+  const stripeSessionId = sessionIdFromUrl || sessionIdFromStorage;
 
   useEffect(() => {
-    if (!sessionId) {
-      setError('No payment session found');
-      setLoading(false);
-      return;
-    }
-
-    const fetchPaymentStatus = async () => {
+    const fetchStripeStatus = async () => {
       try {
-        // Fetch session details from backend
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/session/${sessionId}`);
+        if (!stripeSessionId) {
+          throw new Error('No Stripe payment session found');
+        }
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/session/${stripeSessionId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch payment session');
         }
         const data = await response.json();
         setPaymentData(data);
-        
+
         if (data.status === 'complete') {
-          // ✅ Clear cart on successful payment
           clearCart();
         } else {
           setError(`Payment status: ${data.status}`);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to verify payment');
+        setError(err instanceof Error ? err.message : 'Failed to verify Stripe payment');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPaymentStatus();
-    
-    // Clear session ID from localStorage
+    const fetchPaypalStatus = async () => {
+      try {
+        if (!paypalOrderIdFromUrl) {
+          throw new Error('No PayPal order ID found');
+        }
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/paypal/order/${paypalOrderIdFromUrl}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch PayPal order status');
+        }
+        const data = await response.json();
+        setPaymentData(data);
+
+        if (data.status === 'complete') {
+          clearCart();
+        } else {
+          setError(`Payment status: ${data.status}`);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to verify PayPal payment');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activeProvider === 'paypal') {
+      fetchPaypalStatus();
+      return;
+    }
+
+    fetchStripeStatus();
     if (sessionIdFromUrl) {
       localStorage.removeItem('stripeSessionId');
     }
-  }, [sessionId, sessionIdFromUrl, sessionIdFromStorage, clearCart]);
+  }, [activeProvider, stripeSessionId, sessionIdFromUrl, paypalOrderIdFromUrl, clearCart]);
 
   const formatPrice = (price: number) => {
     const currency = paymentData?.currency || 'IDR';
@@ -103,6 +128,8 @@ const PaymentSuccessPage = () => {
       '=======================',
       '',
       'PAYMENT',
+      `provider: ${(paymentData?.provider || activeProvider || '-').toUpperCase()}`,
+      `transaction_id: ${paymentData?.paypalCaptureId || paymentData?.paymentIntentId || paymentData?.paymentIntent || order?.stripePaymentIntentId || order?.payment_intent_id || '-'}`,
       `payment_intent_id: ${paymentData?.paymentIntentId || paymentData?.paymentIntent || order?.stripePaymentIntentId || '-'}`,
       `paid_at: ${paidAtText || '-'}`,
       `total_amount: ${formatPrice(paymentData?.amount || 0)}`,
@@ -205,7 +232,7 @@ const PaymentSuccessPage = () => {
         <div className="order-details">
           <div className="detail-row">
             <span className="label">Order ID</span>
-            <span className="value">{paymentData.order?.orderId || sessionId}</span>
+            <span className="value">{paymentData.order?.orderId || stripeSessionId || paypalOrderIdFromUrl}</span>
           </div>
           
           <div className="detail-row">

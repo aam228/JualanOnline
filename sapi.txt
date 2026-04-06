@@ -1,0 +1,34 @@
+
+"Saya adalah mahasiswa Teknologi Komputer di Universitas Bina Sarana Informatika (UBSI). Saya memiliki tugas UTS untuk membuat tulisan blog berdasarkan materi kuliah **Internet of Things (IoT)** pertemuan 1 sampai 3[cite: 14, 15, 21].
+
+Bantulah saya menyusun draf tulisan blog yang profesional, unik (tidak sama dengan mahasiswa lain), namun tetap akurat sesuai referensi akademik.
+
+#### **I. Cakupan Materi yang Wajib Dibahas:**
+Tolong buatkan poin-poin bahasan mendalam (bukan sekadar definisi) untuk bagian berikut:
+1.  [cite_start]**Evolusi dari M2M ke IoT:** Jelaskan bagaimana komunikasi antar-mesin (M2M) menjadi fondasi IoT[cite: 159, 209]. [cite_start]Bahas penerapan nyatanya di bidang transportasi (pelacakan aset), kesehatan (monitoring pasien jarak jauh), dan keamanan (surveilans)[cite: 162, 187, 199].
+2.  [cite_start]**Struktur dan Logika IoT:** Bedah elemen pembentuk IoT menggunakan persamaan: **Physical Objects + Controllers, Sensors, Actuators + Internet = IoT**[cite: 507, 508, 509]. [cite_start]Jelaskan tugas manusia dalam struktur ini sebagai pengatur dan pengawas, sementara mesin bekerja otomatis melalui argumen pemrograman[cite: 413, 415].
+3.  [cite_start]**Dimensi Konektivitas (ITU-T Y.2060):** Jelaskan konsep konektivitas tanpa batas: *Any TIME, Any PLACE,* dan *Any THING Connection*[cite: 483, 485, 494].
+4.  [cite_start]**Arsitektur Teknis & Edge Computing:** Bahas peran **Gateway** sebagai penerjemah protokol antar perangkat[cite: 602]. [cite_start]Berikan analisis mengapa **Fog/Edge Computing** sangat penting untuk mengurangi beban penyimpanan cloud dan mempercepat pemrosesan data di lokasi sensor[cite: 645, 679].
+
+#### **II. Batasan dan Kriteria Penulisan:**
+* **Orisinalitas:** Jangan gunakan kalimat standar buku teks. Gunakan gaya bahasa artikel teknologi yang informatif namun mudah dipahami oleh orang awam.
+* [cite_start]**Analisis Ekonomi:** Masukkan poin mengenai dampak ekonomi potensial IoT yang diperkirakan mencapai \$3.9 - 11.1 triliun per tahun pada 2025 menurut McKinsey Global Institute agar tulisan terlihat berbobot[cite: 470].
+* [cite_start]**Sentuhan Lokal:** Sebutkan bahwa di Indonesia, teknologi ini masih menghadapi kendala dana dan literasi ilmu teknologi yang perlu kita hadapi sebagai mahasiswa[cite: 177].
+* [cite_start]**Referensi Akademik:** Pastikan draf ini merujuk secara implisit pada sumber utama: Jan Holler (2014), Francis daCosta (2013), dan Rekomendasi ITU-T Y.2060[cite: 51, 52, 483].
+
+#### **III. Format Output:**
+Buatkan draf blog dengan struktur:
+1.  **Judul yang Menarik** (Contoh: 'IoT: Bukan Sekadar Koneksi, Tapi Masa Depan Efisiensi').
+2.  **Pendahuluan** (Konteks industri 4.0 dan peran mahasiswa).
+3.  **Sub-bab Materi** (Gunakan pointer-pointer di atas).
+4.  **Opini Penutup** (Harapan untuk perkembangan IoT di Indonesia).
+5.  **Daftar Pustaka** (Sesuai buku referensi perkuliahan)."
+
+---
+
+### **Hal-hal yang Perlu Anda Perhatikan (Tips Tambahan):**
+Agar tulisan Anda benar-benar sesuai dengan kontrak perkuliahan UBSI yang Anda unggah:
+1.  [cite_start]**Gaya Penulisan:** Blog bersifat bebas dan kreatif[cite: 109, 119]. [cite_start]Jangan terlalu kaku seperti makalah, tapi tetap sopan karena ini untuk penilaian UTS[cite: 108, 118].
+2.  [cite_start]**Wajib Unik:** Peraturan dosen menyebutkan tulisan **tidak boleh sama** dengan mahasiswa lain[cite: 110, 120]. Pastikan Anda membaca kembali hasil chatbot dan mengubah beberapa kalimat ke dalam gaya bahasa Anda sendiri.
+3.  [cite_start]**Media Blog:** Anda bebas memilih platform (Blogspot, WordPress, Medium, dll.)[cite: 109, 119]. [cite_start]Pastikan pengaturannya 'Public' agar dosen bisa mengecek link yang Anda berikan[cite: 108].
+4.  [cite_start]**Referensi:** Jangan lupa mencantumkan minimal 3 referensi buku/jurnal yang ada di slide (Jan Holler, Francis daCosta, Lynggaard Per) di bagian bawah artikel blog Anda[cite: 51, 52, 53].
