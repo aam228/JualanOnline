@@ -229,30 +229,6 @@
   text-align: start;
 }
 
-.order-id-button {
-  background: transparent;
-  border: 1px solid #667eea;
-  color: #667eea;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Monaco', 'Courier New', monospace;
-  font-size: 11px;
-  font-weight: 600;
-  transition: background 0.2s, color 0.2s;
-}
-
-.order-id-button:hover {
-  background: #667eea;
-  color: white;
-}
-
-.order-id-button.copied {
-  background: #10b981;
-  border-color: #10b981;
-  color: white;
-}
-
 .col-date {
   max-width: 160px;
   font-size: 13px;
@@ -554,12 +530,6 @@
   .col-order-id {
     font-size: 9px;
     font-weight: 600;
-  }
-
-  .order-id-button {
-    padding: 0.3rem 0.6rem;
-    font-size: 9px;
-    border-radius: 3px;
   }
 
   .col-date {

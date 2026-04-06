@@ -26,7 +26,6 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     // Redirect if not authenticated
@@ -148,10 +147,8 @@ const OrdersPage = () => {
     return methodMap[method.toLowerCase()] || method;
   };
 
-  const handleCopyOrderId = (orderId: string) => {
-    navigator.clipboard.writeText(orderId);
-    setCopiedId(orderId);
-    setTimeout(() => setCopiedId(null), 2000);
+  const copyToClipboard = (value: string) => {
+    navigator.clipboard.writeText(value);
   };
 
   // Loading state
@@ -229,15 +226,7 @@ const OrdersPage = () => {
               {orders.map((order, index) => (
                 <tr key={order.id || order.orderId} className={index % 2 === 0 ? 'even' : 'odd'}>
                   <td className="col-no">{index + 1}</td>
-                  <td className="col-order-id">
-                    <button 
-                      onClick={() => handleCopyOrderId(order.orderId)}
-                      className={`order-id-button ${copiedId === order.orderId ? 'copied' : ''}`}
-                      title="Klik untuk copy Order ID"
-                    >
-                      {copiedId === order.orderId ? '✓ Tersalin!' : order.orderId}
-                    </button>
-                  </td>
+                  <td className="col-order-id" onClick={() => copyToClipboard(order.orderId)} title="Klik untuk copy Order ID">{order.orderId}</td>
                   <td className="col-date">{formatDate(order.createdAt)}</td>
                   <td className="col-method">{formatPaymentMethod(order.paymentMethod)}</td>
                   <td className="col-amount">{formatPrice(order.amount, order.currency)}</td>
