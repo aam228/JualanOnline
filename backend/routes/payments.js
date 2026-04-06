@@ -1,95 +1,8 @@
 
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
 const { getDB } = require('../config/db');
 const { verifyToken } = require('../middleware/auth');
-
-const WA_API_URL = process.env.WA_API_URL || 'https://api.fonnte.com/send';
-const WA_API_TOKEN = process.env.WA_API_TOKEN || '';
-const WA_SELLER_TARGET = process.env.WA_SELLER_TARGET || '';
-
-function formatCurrency(value, currency = 'USD') {
-  try {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: String(currency).toUpperCase(),
-      minimumFractionDigits: 0,
-    }).format(Number(value || 0));
-  } catch (error) {
-    return `${value || 0} ${String(currency || 'USD').toUpperCase()}`;
-  }
-}
-
-function buildSellerWhatsAppMessage(order) {
-  const items = Array.isArray(order?.items) ? order.items : [];
-  const shippingAddress = order?.shippingAddress || {};
-  const itemLines = items.length
-    ? items
-        .map((item, idx) => {
-          const qty = item?.quantity || 1;
-          const itemName = item?.name || 'Item';
-          const itemSku = item?.sku ? ` (SKU: ${item.sku})` : '';
-          return `${idx + 1}. ${itemName}${itemSku} x${qty}`;
-        })
-        .join('\n')
-    : '- Tidak ada detail item';
-
-  const addressLine = [
-    shippingAddress.address1,
-    shippingAddress.address2,
-    shippingAddress.city,
-    shippingAddress.state,
-    shippingAddress.country,
-    shippingAddress.postalCode,
-  ]
-    .filter(Boolean)
-    .join(', ');
-
-  return [
-    'NOTIF TRANSAKSI BARU (PAID)',
-    '',
-    `Order ID: ${order?.orderId || '-'}`,
-    `Session ID: ${order?.stripeSessionId || '-'}`,
-    `Nama: ${order?.customerName || '-'}`,
-    `Email: ${order?.customerEmail || '-'}`,
-    `Telepon: ${shippingAddress.phone || '-'}`,
-    `Total: ${formatCurrency(order?.amount, order?.currency)}`,
-    `Region: ${order?.shippingRegion || '-'}`,
-    `Ongkir: ${formatCurrency(order?.shippingCost || 0, order?.currency || 'USD')}`,
-    '',
-    'Alamat Kirim:',
-    addressLine || '-',
-    '',
-    'Detail Produk:',
-    itemLines,
-    '',
-    'Silakan lanjut proses shipping manual.',
-  ].join('\n');
-}
-
-async function sendSellerWhatsAppNotification(order) {
-  if (!WA_API_TOKEN || !WA_SELLER_TARGET) {
-    console.log('WA notification skipped: WA_API_TOKEN or WA_SELLER_TARGET not configured');
-    return;
-  }
-
-  const message = buildSellerWhatsAppMessage(order);
-  await axios.post(
-    WA_API_URL,
-    {
-      target: WA_SELLER_TARGET,
-      message,
-    },
-    {
-      headers: {
-        Authorization: WA_API_TOKEN,
-        'Content-Type': 'application/json',
-      },
-      timeout: 10000,
-    }
-  );
-}
 
 // CORS preflight handler for all /payments routes
 router.options('*', (req, res) => {
@@ -504,18 +417,7 @@ async function handleCheckoutSessionCompleted(session) {
     );
 
     if (updateResult.modifiedCount > 0) {
-      const paidOrder = await ordersCollection.findOne({
-        $or: [{ stripeSessionId: session.id }, { orderId: metadata.orderId }],
-      });
-
-      if (paidOrder) {
-        try {
-          await sendSellerWhatsAppNotification(paidOrder);
-          console.log(`📲 WA notification sent for order: ${paidOrder.orderId}`);
-        } catch (waError) {
-          console.error('Failed to send WA notification:', waError.message);
-        }
-      }
+      console.log(`✅ Order marked paid from checkout session: ${metadata.orderId || session.id}`);
     }
 
     console.log(`✅ Checkout session paid: ${session.id}`);

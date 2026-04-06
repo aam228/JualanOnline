@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './PaymentSuccessPage.css';
@@ -11,6 +11,8 @@ const PaymentSuccessPage = () => {
   const [loading, setLoading] = useState(true);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [waUrl, setWaUrl] = useState('');
+  const hasRedirectedRef = useRef(false);
 
   // ✅ FIX: Get session ID from URL query params or localStorage
   const queryParams = new URLSearchParams(location.search);
@@ -75,6 +77,71 @@ const PaymentSuccessPage = () => {
     });
   };
 
+  const sellerWaNumber = import.meta.env.VITE_SELLER_WHATSAPP_NUMBER || '';
+
+  const buildWhatsAppMessage = () => {
+    const order = paymentData?.order || {};
+    const shippingAddress = order.shippingAddress || {};
+    const items = Array.isArray(order.items) ? order.items : [];
+    const addressLine = [
+      shippingAddress.address1,
+      shippingAddress.address2,
+      shippingAddress.city,
+      shippingAddress.state,
+      shippingAddress.country,
+      shippingAddress.postalCode,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    const itemLines = items.length
+      ? items
+          .map((item: any, idx: number) => {
+            const qty = item?.quantity || 1;
+            const skuText = item?.sku ? ` (SKU: ${item.sku})` : '';
+            return `${idx + 1}. ${item?.name || 'Item'}${skuText} x${qty}`;
+          })
+          .join('\n')
+      : '- Data item belum tersedia';
+
+    return [
+      'Halo admin, saya sudah melakukan pembayaran.',
+      '',
+      `Order ID: ${order?.orderId || paymentData?.sessionId || '-'}`,
+      `Session ID: ${paymentData?.sessionId || '-'}`,
+      `Nama: ${order?.customerName || '-'}`,
+      `Email: ${order?.customerEmail || paymentData?.customerEmail || '-'}`,
+      `Telepon: ${shippingAddress.phone || '-'}`,
+      `Total: ${formatPrice(paymentData?.amount || 0)}`,
+      `Region: ${order?.shippingRegion || '-'}`,
+      '',
+      'Alamat Pengiriman:',
+      addressLine || '-',
+      '',
+      'Detail Produk:',
+      itemLines,
+      '',
+      'Mohon diproses untuk pengiriman. Terima kasih.',
+    ].join('\n');
+  };
+
+  useEffect(() => {
+    if (loading || error || !paymentData || paymentData.status !== 'complete') {
+      return;
+    }
+
+    if (!sellerWaNumber || hasRedirectedRef.current) {
+      return;
+    }
+
+    const message = buildWhatsAppMessage();
+    const targetUrl = `https://wa.me/${sellerWaNumber}?text=${encodeURIComponent(message)}`;
+    setWaUrl(targetUrl);
+
+    hasRedirectedRef.current = true;
+    window.location.href = targetUrl;
+  }, [loading, error, paymentData, sellerWaNumber]);
+
   if (loading) {
     return (
       <div className="payment-success-container">
@@ -109,6 +176,7 @@ const PaymentSuccessPage = () => {
         <div className="icon success-icon">✓</div>
         <h1>Pembayaran Berhasil!</h1>
         <p className="status-message">Terima kasih telah melakukan pembayaran</p>
+        <p className="status-message">Anda akan diarahkan otomatis ke WhatsApp untuk mengirim data transaksi.</p>
 
         {/* Order Details */}
         <div className="order-details">
@@ -161,6 +229,11 @@ const PaymentSuccessPage = () => {
 
         {/* Action Buttons */}
         <div className="action-buttons">
+          {waUrl && (
+            <button onClick={() => window.location.href = waUrl} className="btn-orders">
+              Buka WhatsApp Sekarang
+            </button>
+          )}
           <button onClick={() => navigate('/orders')} className="btn-orders">
             Lihat Pesanan Saya
           </button>
