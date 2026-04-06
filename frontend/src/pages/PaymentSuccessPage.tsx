@@ -79,7 +79,7 @@ const PaymentSuccessPage = () => {
     });
   };
 
-  const sellerWaNumber = String(import.meta.env.VITE_SELLER_WHATSAPP_NUMBER || '').replace(/[^\d]/g, '');
+  const sellerWaNumber = String(import.meta.env.VITE_SELLER_WHATSAPP_NUMBER || '6287814045327').replace(/[^\d]/g, '');
 
   const buildWhatsAppMessage = () => {
     const order = paymentData?.order || {};
@@ -156,7 +156,8 @@ const PaymentSuccessPage = () => {
     const timeoutId = window.setTimeout(() => {
       const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
       if (!popup) {
-        setWaWarning('Browser menahan auto-open. Klik tombol "Buka WhatsApp Sekarang" di bawah.');
+        setWaWarning('Browser menahan tab baru. Mengarahkan ke WhatsApp di tab yang sama.');
+        window.location.assign(waUrl);
       }
     }, 0);
 
