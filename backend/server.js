@@ -22,12 +22,27 @@ const app = express();
 const PORT = process.env.PORT;
 
 // Middleware
+const allowedOrigins = [
+  'https://jualan-online.vercel.app',
+  'https://jualanonline-production.up.railway.app',
+];
+
 app.use(cors({
-  origin: [
-    'https://jualan-online.vercel.app',
-    'https://jualanonline-production.up.railway.app',
-    'http://localhost:5173'
-  ],
+  origin: (origin, callback) => {
+    // Allow non-browser requests (curl/Postman/server-to-server)
+    if (!origin) return callback(null, true);
+
+    // Allow all localhost ports for local frontend dev (Vite can auto-switch ports)
+    if (/^http:\/\/localhost:\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(express.json());

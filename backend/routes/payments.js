@@ -65,8 +65,6 @@ async function upsertDraftOrder({
         status: 'pending',
         paymentStatus: 'pending',
         payment_status: 'pending',
-        paymentProvider,
-        payment_provider: paymentProvider,
         orderSource: `${paymentProvider}-checkout`,
         items: items || [],
         shippingAddress: shippingAddress || {},
