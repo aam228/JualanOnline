@@ -40,8 +40,8 @@ router.post('/create-checkout-session', async (req, res) => {
     }
 
     const normalizedOrderId = orderId || `ORDER-${Date.now()}`;
-    // Tentukan base URL frontend (support localhost & production)
-    let frontendBaseUrl = 'https://jualanonline.vercel.app';
+    // Tentukan base URL frontend (support env override, localhost, dan default production)
+    let frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'https://jualan-online.vercel.app';
     const origin = req.headers.origin;
     if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
       frontendBaseUrl = origin;
