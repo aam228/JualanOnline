@@ -11,6 +11,7 @@ const ErrorPopup = ({ message, onClose }: { message: string, onClose: () => void
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './CheckoutPage.css';
 
 
@@ -26,9 +27,18 @@ interface CheckoutForm {
   notes: string;
 }
 
+interface CheckoutDisplayItem {
+  _id: string;
+  name: string;
+  price: number;
+  quantity?: number;
+  sku?: string;
+}
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cart, getTotalPrice } = useCart();
+  const { user } = useAuth();
   const location = useLocation();
   // Ambil product dari Buy Now jika ada
   const directProduct = location.state && location.state.product ? location.state.product : null;
@@ -179,6 +189,27 @@ const CheckoutPage = () => {
     const productSlug = cart[0]?.slug || '';
     const productCurrency = 'USD';
     const currentUrl = window.location.href;
+    const checkoutItems = itemsToShow.map((item) => ({
+      id: item._id,
+      name: item.name,
+      sku: item.sku || null,
+      quantity: item.quantity ? item.quantity : 1,
+      price: item.price || 0,
+      currency: productCurrency,
+    }));
+
+    const shippingAddress = {
+      country: form.country,
+      name: form.name,
+      phone: form.phone,
+      address1: form.address1,
+      address2: form.address2,
+      city: form.city,
+      state: form.state,
+      postalCode: form.postalCode,
+      notes: form.notes,
+    };
+
     const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -186,9 +217,14 @@ const CheckoutPage = () => {
         amount: total,
         currency: productCurrency,
         customerName: form.name,
+        customerEmail: user?.email || '',
         orderId: `ORDER-${Date.now()}`,
         productSlug,
-        currentUrl
+        currentUrl,
+        items: checkoutItems,
+        shippingAddress,
+        shippingRegion: selectedRegion,
+        shippingCost,
       })
     });
     const data = await response.json();
@@ -204,7 +240,7 @@ const CheckoutPage = () => {
 
   // Hitung subtotal dan total sesuai mode
   let subtotal = 0;
-  let itemsToShow = [];
+  let itemsToShow: CheckoutDisplayItem[] = [];
   if (directProduct) {
     subtotal = directProduct.price;
     itemsToShow = [directProduct];

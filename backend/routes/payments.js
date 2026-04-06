@@ -1,8 +1,95 @@
 
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 const { getDB } = require('../config/db');
 const { verifyToken } = require('../middleware/auth');
+
+const WA_API_URL = process.env.WA_API_URL || 'https://api.fonnte.com/send';
+const WA_API_TOKEN = process.env.WA_API_TOKEN || '';
+const WA_SELLER_TARGET = process.env.WA_SELLER_TARGET || '';
+
+function formatCurrency(value, currency = 'USD') {
+  try {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: String(currency).toUpperCase(),
+      minimumFractionDigits: 0,
+    }).format(Number(value || 0));
+  } catch (error) {
+    return `${value || 0} ${String(currency || 'USD').toUpperCase()}`;
+  }
+}
+
+function buildSellerWhatsAppMessage(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const shippingAddress = order?.shippingAddress || {};
+  const itemLines = items.length
+    ? items
+        .map((item, idx) => {
+          const qty = item?.quantity || 1;
+          const itemName = item?.name || 'Item';
+          const itemSku = item?.sku ? ` (SKU: ${item.sku})` : '';
+          return `${idx + 1}. ${itemName}${itemSku} x${qty}`;
+        })
+        .join('\n')
+    : '- Tidak ada detail item';
+
+  const addressLine = [
+    shippingAddress.address1,
+    shippingAddress.address2,
+    shippingAddress.city,
+    shippingAddress.state,
+    shippingAddress.country,
+    shippingAddress.postalCode,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  return [
+    'NOTIF TRANSAKSI BARU (PAID)',
+    '',
+    `Order ID: ${order?.orderId || '-'}`,
+    `Session ID: ${order?.stripeSessionId || '-'}`,
+    `Nama: ${order?.customerName || '-'}`,
+    `Email: ${order?.customerEmail || '-'}`,
+    `Telepon: ${shippingAddress.phone || '-'}`,
+    `Total: ${formatCurrency(order?.amount, order?.currency)}`,
+    `Region: ${order?.shippingRegion || '-'}`,
+    `Ongkir: ${formatCurrency(order?.shippingCost || 0, order?.currency || 'USD')}`,
+    '',
+    'Alamat Kirim:',
+    addressLine || '-',
+    '',
+    'Detail Produk:',
+    itemLines,
+    '',
+    'Silakan lanjut proses shipping manual.',
+  ].join('\n');
+}
+
+async function sendSellerWhatsAppNotification(order) {
+  if (!WA_API_TOKEN || !WA_SELLER_TARGET) {
+    console.log('WA notification skipped: WA_API_TOKEN or WA_SELLER_TARGET not configured');
+    return;
+  }
+
+  const message = buildSellerWhatsAppMessage(order);
+  await axios.post(
+    WA_API_URL,
+    {
+      target: WA_SELLER_TARGET,
+      message,
+    },
+    {
+      headers: {
+        Authorization: WA_API_TOKEN,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    }
+  );
+}
 
 // CORS preflight handler for all /payments routes
 router.options('*', (req, res) => {
@@ -19,7 +106,27 @@ router.post('/create-checkout-session', async (req, res) => {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe not initialized' });
     }
-    const { amount, currency = 'idr', customerEmail, customerName, orderId } = req.body;
+    const {
+      amount,
+      currency = 'idr',
+      customerEmail,
+      customerName,
+      orderId,
+      items = [],
+      shippingAddress = {},
+      shippingRegion = '',
+      shippingCost = 0,
+    } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+
+    if (!customerName || !shippingAddress.address1 || !shippingAddress.city || !shippingAddress.country) {
+      return res.status(400).json({ error: 'Incomplete shipping/customer data' });
+    }
+
+    const normalizedOrderId = orderId || `ORDER-${Date.now()}`;
     // Tentukan base URL frontend (support localhost & production)
     let frontendBaseUrl = 'https://jualanonline.vercel.app';
     const origin = req.headers.origin;
@@ -28,12 +135,47 @@ router.post('/create-checkout-session', async (req, res) => {
     }
     const productSlug = req.body.productSlug || '';
     const currentUrl = req.body.currentUrl || '';
+
+    // Save draft transaction before payment so seller has complete transaction data.
+    let draftOrderInserted = false;
+    try {
+      const db = getDB();
+      const ordersCollection = db.collection('orders');
+      await ordersCollection.updateOne(
+        { orderId: normalizedOrderId },
+        {
+          $setOnInsert: {
+            orderId: normalizedOrderId,
+            customerEmail: customerEmail || '',
+            customerName,
+            amount,
+            currency,
+            status: 'pending_payment',
+            paymentStatus: 'unpaid',
+            orderSource: 'checkout-session',
+            items,
+            shippingAddress,
+            shippingRegion,
+            shippingCost,
+            createdAt: new Date(),
+          },
+          $set: {
+            updatedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+      draftOrderInserted = true;
+    } catch (dbError) {
+      console.error('Failed to save draft order before checkout:', dbError.message);
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: currency,
-          product_data: { name: 'Order #' + (orderId || 'unknown') },
+          product_data: { name: 'Order #' + normalizedOrderId },
           unit_amount: Math.round(amount * 100),
         },
         quantity: 1,
@@ -42,8 +184,33 @@ router.post('/create-checkout-session', async (req, res) => {
       customer_email: customerEmail,
       success_url: `${frontendBaseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: currentUrl || `${frontendBaseUrl}/product/${productSlug}`,
-      metadata: { orderId, customerName, currentUrl },
+      metadata: {
+        orderId: normalizedOrderId,
+        customerName,
+        currentUrl,
+        shippingRegion: String(shippingRegion || ''),
+      },
     });
+
+    // Link Stripe session into draft order for reliable payment reconciliation.
+    if (draftOrderInserted) {
+      try {
+        const db = getDB();
+        const ordersCollection = db.collection('orders');
+        await ordersCollection.updateOne(
+          { orderId: normalizedOrderId },
+          {
+            $set: {
+              stripeSessionId: session.id,
+              updatedAt: new Date(),
+            },
+          }
+        );
+      } catch (dbError) {
+        console.error('Failed to link checkout session to order:', dbError.message);
+      }
+    }
+
     res.json({ id: session.id, url: session.url });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -289,6 +456,9 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   // Handle different event types
   switch (event.type) {
+    case 'checkout.session.completed':
+      await handleCheckoutSessionCompleted(event.data.object);
+      break;
     case 'payment_intent.succeeded':
       await handlePaymentSuccess(event.data.object);
       break;
@@ -301,6 +471,58 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   res.json({ received: true });
 });
+
+async function handleCheckoutSessionCompleted(session) {
+  try {
+    const db = getDB();
+    const ordersCollection = db.collection('orders');
+    const metadata = session.metadata || {};
+
+    // Update only once to avoid duplicate side effects (like duplicate WA notifications).
+    const updateResult = await ordersCollection.updateOne(
+      {
+        $and: [
+          {
+            $or: [
+              { stripeSessionId: session.id },
+              { orderId: metadata.orderId },
+            ],
+          },
+          { paymentStatus: { $ne: 'paid' } },
+        ],
+      },
+      {
+        $set: {
+          status: 'completed',
+          paymentStatus: 'paid',
+          stripeSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent || null,
+          paidAt: new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (updateResult.modifiedCount > 0) {
+      const paidOrder = await ordersCollection.findOne({
+        $or: [{ stripeSessionId: session.id }, { orderId: metadata.orderId }],
+      });
+
+      if (paidOrder) {
+        try {
+          await sendSellerWhatsAppNotification(paidOrder);
+          console.log(`📲 WA notification sent for order: ${paidOrder.orderId}`);
+        } catch (waError) {
+          console.error('Failed to send WA notification:', waError.message);
+        }
+      }
+    }
+
+    console.log(`✅ Checkout session paid: ${session.id}`);
+  } catch (error) {
+    console.error('Error handling checkout.session.completed:', error);
+  }
+}
 
 async function handlePaymentSuccess(paymentIntent) {
   try {
@@ -434,12 +656,39 @@ router.get('/orders', verifyToken, async (req, res) => {
         }))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+      // Merge additional checkout details from database (address/items/shipping info).
+      let dbOrdersMap = new Map();
+      try {
+        const db = getDB();
+        const ordersCollection = db.collection('orders');
+        const sessionIds = userOrders.map((o) => o.id).filter(Boolean);
+        if (sessionIds.length > 0) {
+          const dbOrders = await ordersCollection
+            .find({ stripeSessionId: { $in: sessionIds } })
+            .toArray();
+          dbOrdersMap = new Map(dbOrders.map((o) => [o.stripeSessionId, o]));
+        }
+      } catch (dbError) {
+        console.error('Failed to enrich orders with DB details:', dbError.message);
+      }
+
+      const enrichedOrders = userOrders.map((order) => {
+        const detail = dbOrdersMap.get(order.id);
+        return {
+          ...order,
+          shippingAddress: detail?.shippingAddress || null,
+          shippingRegion: detail?.shippingRegion || null,
+          shippingCost: detail?.shippingCost || 0,
+          items: detail?.items || [],
+        };
+      });
+
       console.log(`✅ Found ${userOrders.length} orders for user: ${userEmail}`);
 
       res.json({
         email: userEmail,
-        totalOrders: userOrders.length,
-        orders: userOrders,
+        totalOrders: enrichedOrders.length,
+        orders: enrichedOrders,
         source: 'stripe', // Indicate data comes from Stripe, not database
       });
     } catch (stripeError) {
