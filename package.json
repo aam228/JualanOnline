@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@stripe/stripe-js": "^9.0.1"
