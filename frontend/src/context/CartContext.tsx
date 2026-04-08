@@ -97,6 +97,28 @@ const normalizeCartItems = (items: CartItem[]): CartItem[] => {
   return Array.from(mergedById.values());
 };
 
+const toSafeString = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
+
+const toSafeNumber = (value: unknown, fallback = 0): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+const buildSyncCartPayload = (items: CartItem[]) => ({
+  items: items.map((item) => ({
+    _id: toSafeString(item._id),
+    slug: toSafeString(item.slug, toSafeString(item._id)),
+    name: toSafeString(item.name, 'Untitled Product'),
+    price: toSafeNumber(item.price, 0),
+    image: toSafeString(item.image),
+    category: toSafeString(item.category),
+    description: toSafeString(item.description),
+    stock: toSafeNumber(item.stock, 0),
+    currency: toSafeString(item.currency, 'IDR'),
+    quantity: toSafeNumber(item.quantity, 1),
+    selectedVariants: item.selectedVariants && typeof item.selectedVariants === 'object' ? item.selectedVariants : undefined,
+    sku: toSafeString(item.sku),
+  })),
+});
+
 const loadInitialCart = (): CartItem[] => {
   try {
     const raw = localStorage.getItem(CART_STORAGE_KEY);
@@ -248,13 +270,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const saveRemoteCart = async () => {
       try {
+        const cartData = buildSyncCartPayload(cart);
+        console.log('[CART DEBUG] syncCartToBackend payload:', JSON.stringify(cartData));
+
         const response = await fetch(`${API_BASE_URL}/cart`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ items: cart }),
+          body: JSON.stringify(cartData),
         });
 
         if (!response.ok) {
@@ -262,6 +287,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           logCartDebug('Cart sync failed:', response.status);
           return;
         }
+
+        const responseData = await response.json();
+        logCartDebug('Cart sync success response:', responseData);
 
         logCartDebug('✅ Cart synced to backend');
       } catch (error) {

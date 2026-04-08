@@ -123,7 +123,7 @@ const ProductDetailPage = () => {
 
     addToCart({
       _id: product._id,
-      slug: product.slug,
+      slug: product.slug || product._id || product.name.toLowerCase().replace(/\s+/g, '-'),
       name: product.name,
       price,
       image,

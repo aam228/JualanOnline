@@ -5,6 +5,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 // Middleware to verify JWT token
 function verifyToken(req, res, next) {
   try {
+    if (req.originalUrl.startsWith('/api/cart')) {
+      console.log('[AUTH] Incoming cart request:', req.method, req.originalUrl);
+      console.log('[AUTH] Cart req.body before token verify:', JSON.stringify(req.body));
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ error: 'No token provided' });
@@ -17,6 +22,12 @@ function verifyToken(req, res, next) {
 
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
+
+    if (req.originalUrl.startsWith('/api/cart')) {
+      console.log('[AUTH] Token decoded for cart request userId:', req.user?._id);
+      console.log('[AUTH] Cart req.body after token verify:', JSON.stringify(req.body));
+    }
+
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid or expired token' });

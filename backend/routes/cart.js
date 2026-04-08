@@ -7,7 +7,8 @@ const { verifyToken } = require('../middleware/auth');
 // UTILITY: Cart item ID generation
 // ==========================================
 function getCartItemId(item) {
-  return item.sku ? `${item._id}-${item.sku}` : item._id;
+  const baseId = item._id || item.id || item.productId;
+  return item.sku ? `${baseId}-${item.sku}` : baseId;
 }
 
 // ==========================================
@@ -18,19 +19,56 @@ function isValidCartItem(item) {
 
   return (
     typeof item._id === 'string' &&
+    item._id.trim().length > 0 &&
     typeof item.slug === 'string' &&
+    item.slug.trim().length > 0 &&
     typeof item.name === 'string' &&
+    item.name.trim().length > 0 &&
     typeof item.price === 'number' &&
     Number.isFinite(item.price) &&
+    item.price >= 0 &&
     typeof item.image === 'string' &&
     typeof item.category === 'string' &&
     typeof item.description === 'string' &&
     typeof item.stock === 'number' &&
     Number.isFinite(item.stock) &&
+    item.stock >= 0 &&
     typeof item.quantity === 'number' &&
     Number.isFinite(item.quantity) &&
     item.quantity > 0
   );
+}
+
+function toStringOrFallback(value, fallback = '') {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function toNumberOrFallback(value, fallback = 0) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeIncomingCartItem(item) {
+  if (!item || typeof item !== 'object') return null;
+
+  const productId = toStringOrFallback(item._id, toStringOrFallback(item.id, toStringOrFallback(item.productId)));
+  const productName = toStringOrFallback(item.name, 'Untitled Product');
+
+  const normalized = {
+    _id: productId,
+    slug: toStringOrFallback(item.slug, productId || productName.toLowerCase().replace(/\s+/g, '-')),
+    name: productName,
+    price: toNumberOrFallback(item.price, 0),
+    image: toStringOrFallback(item.image),
+    category: toStringOrFallback(item.category),
+    description: toStringOrFallback(item.description),
+    stock: toNumberOrFallback(item.stock, 0),
+    currency: toStringOrFallback(item.currency, 'IDR'),
+    quantity: toNumberOrFallback(item.quantity, toNumberOrFallback(item.qty, 1)),
+    selectedVariants: item.selectedVariants && typeof item.selectedVariants === 'object' ? item.selectedVariants : undefined,
+    sku: toStringOrFallback(item.sku),
+  };
+
+  return normalized;
 }
 
 // ==========================================
@@ -125,6 +163,8 @@ router.get('/', verifyToken, async (req, res) => {
 // ==========================================
 router.put('/', verifyToken, async (req, res) => {
   try {
+    console.log('[CART] PUT raw req.body:', JSON.stringify(req.body));
+
     // Extract and validate userId from JWT
     const userId = req.user._id;
     if (!userId) {
@@ -137,9 +177,17 @@ router.put('/', verifyToken, async (req, res) => {
     // Validate request body
     const inputItems = Array.isArray(req.body?.items) ? req.body.items : [];
     console.log(`[CART] PUT: Received ${inputItems.length} items from client`);
+    console.log('[CART] PUT raw items sample:', JSON.stringify(inputItems[0] || null));
+
+    const normalizedIncomingItems = inputItems
+      .map(normalizeIncomingCartItem)
+      .filter((item) => item !== null);
+
+    console.log(`[CART] PUT: Normalized incoming items count ${normalizedIncomingItems.length}`);
+    console.log('[CART] PUT normalized items sample:', JSON.stringify(normalizedIncomingItems[0] || null));
 
     // Filter and validate items
-    const safeItems = inputItems.filter(item => {
+    const safeItems = normalizedIncomingItems.filter(item => {
       const valid = isValidCartItem(item);
       if (!valid) {
         console.warn('[CART] ⚠️ PUT: Filtering out invalid item:', item);
@@ -147,7 +195,7 @@ router.put('/', verifyToken, async (req, res) => {
       return valid;
     });
 
-    const removedCount = inputItems.length - safeItems.length;
+    const removedCount = normalizedIncomingItems.length - safeItems.length;
     if (removedCount > 0) {
       console.warn(`[CART] ⚠️ PUT: Removed ${removedCount} invalid items`);
     }
