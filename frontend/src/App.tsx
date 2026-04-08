@@ -28,8 +28,8 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   return (
-    <CartProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <CartProvider>
         <Router>
           <div className="App">
             <Header onCartClick={() => setIsCartOpen(true)} />
@@ -61,8 +61,8 @@ function App() {
           <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         </div>
       </Router>
-      </AuthProvider>
-    </CartProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

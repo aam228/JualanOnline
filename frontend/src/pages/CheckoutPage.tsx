@@ -302,6 +302,58 @@ const CheckoutPage = () => {
     }).format(price);
   };
 
+  const shippingMethodText = selectedRegion
+    ? `Economy International (${formatPrice(shippingCost)})`
+    : 'Shipping method will appear here';
+
+  const renderOrderSummaryCard = () => (
+    <div className="order-summary-card">
+      <h3 className="summary-title">Order Summary</h3>
+
+      <div className="summary-section">
+        <h3>Products</h3>
+        {itemsToShow.map((item) => (
+          <div key={`${item._id}-${item.sku || ''}`} className="summary-product">
+            <div className="product-meta">
+              <span className="product-name">{item.name}</span>
+              <span className="product-qty">Qty {item.quantity ? item.quantity : 1}</span>
+            </div>
+            <div className="product-price">{formatPrice((item.price || 0) * (item.quantity ? item.quantity : 1))}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="summary-section">
+        <h3>Shipping</h3>
+        <div className="summary-product">
+          <div className="product-meta">
+            <span className="product-name">{form.name || 'Shipping Contact'}</span>
+            <span className="product-qty">{selectedRegion ? `Region: ${selectedRegion}` : 'Select your region'}</span>
+          </div>
+          <div className="product-price">{formatPrice(shippingCost)}</div>
+        </div>
+        {(form.address1 || form.city || form.state || form.country) && (
+          <p className="shipping-address-preview">{form.address1}, {form.city}, {form.state}, {form.country}</p>
+        )}
+      </div>
+
+      <div className="summary-total">
+        <div className="total-row">
+          <span>Subtotal</span>
+          <span>{formatPrice(subtotal)}</span>
+        </div>
+        <div className="total-row">
+          <span>Shipping</span>
+          <span>{formatPrice(shippingCost)}</span>
+        </div>
+        <div className="total-row total-final">
+          <span>Total</span>
+          <span>{formatPrice(total)}</span>
+        </div>
+      </div>
+    </div>
+  );
+
 
   if (cart.length === 0 && !directProduct) {
     return null;
@@ -312,309 +364,290 @@ const CheckoutPage = () => {
       {popupError && (
         <ErrorPopup message={popupError} onClose={() => setPopupError(null)} />
       )}
-      <div className="container">
+      <div className="container checkout-container">
         {step === 1 && (
-          <form className="shipping-form" onSubmit={handleSubmit} autoComplete="off" style={{ maxWidth: 520, margin: '0 auto' }}>
-            <div className="checkout-form-grid">
-              {/* Country */}
-              <div className="form-group">
-                <label htmlFor="country">Country *</label>
-                <input
-                  type="text"
-                  name="country"
-                  id="country"
-                  value={form.country}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.country && touched.country ? 'input-error' : ''}
-                  placeholder="Enter your country"
-                  required
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Region Dropdown */}
-              <div className="form-group">
-                <label htmlFor="region">Region *</label>
-                <select
-                  name="region"
-                  id="region"
-                  value={selectedRegion}
-                  onChange={e => setSelectedRegion(e.target.value)}
-                  onBlur={() => setTouched(t => ({ ...t, region: true }))}
-                  className={errors.region && touched.region ? 'input-error' : ''}
-                  required
-                >
-                  <option value="">Select region</option>
-                  {shippingRegions.map(region => (
-                    <option key={region.label} value={region.label}>{region.label}</option>
-                  ))}
-                </select>
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Full Name */}
-              <div className="form-group">
-                <label htmlFor="name">Full Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.name && touched.name ? 'input-error' : ''}
-                  required
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Phone Number */}
-              <div className="form-group">
-                <label htmlFor="phone">Phone Number *</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  id="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.phone && touched.phone ? 'input-error' : ''}
-                  required
-                  placeholder="e.g. +62 81234567890"
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Address Line 1 */}
-              <div className="form-group">
-                <label htmlFor="address1">Address Line 1 *</label>
-                <input
-                  type="text"
-                  name="address1"
-                  id="address1"
-                  value={form.address1}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.address1 && touched.address1 ? 'input-error' : ''}
-                  required
-                  placeholder="Street address, P.O. box, company name, c/o"
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Address Line 2 */}
-              <div className="form-group">
-                <label htmlFor="address2">Address Line 2</label>
-                <input
-                  type="text"
-                  name="address2"
-                  id="address2"
-                  value={form.address2}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="Apartment, suite, unit, building, floor, etc. (optional)"
-                />
-              </div>
-              {/* City */}
-              <div className="form-group">
-                <label htmlFor="city">City *</label>
-                <input
-                  type="text"
-                  name="city"
-                  id="city"
-                  value={form.city}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.city && touched.city ? 'input-error' : ''}
-                  required
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* State/Province/Region */}
-              <div className="form-group">
-                <label htmlFor="state">State/Province/Region *</label>
-                <input
-                  type="text"
-                  name="state"
-                  id="state"
-                  value={form.state}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.state && touched.state ? 'input-error' : ''}
-                  required
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Postal/ZIP Code */}
-              <div className="form-group">
-                <label htmlFor="postalCode">Postal/ZIP Code *</label>
-                <input
-                  type="text"
-                  name="postalCode"
-                  id="postalCode"
-                  value={form.postalCode}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={errors.postalCode && touched.postalCode ? 'input-error' : ''}
-                  required
-                />
-                {/* error-message removed, handled by popup */}
-              </div>
-              {/* Additional Notes */}
-              <div className="form-group full-width">
-                <label htmlFor="notes">Additional Notes</label>
-                <textarea
-                  name="notes"
-                  id="notes"
-                  value={form.notes}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  rows={2}
-                  placeholder="Notes for courier (optional)"
-                />
-              </div>
-            </div>
-            {/* Shipping Method Info (read-only) */}
-            <div style={{ margin: '32px 0 0 0' }}>
-              <label htmlFor="shipping-method" style={{ fontWeight: 600, fontSize: 15, marginBottom: 6, display: 'block' }}>Shipping Method</label>
-              <input
-                id="shipping-method"
-                type="text"
-                value={selectedRegion ? `Economy International (${formatPrice(shippingCost)})` : ''}
-                readOnly
-                style={{ width: '100%', padding: '12px 16px', fontSize: 16, border: '1.5px solid #ddd', borderRadius: 8, background: '#f3f4f6', color: '#222', marginBottom: 8 }}
-                placeholder="Shipping method will appear here"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} disabled={loading}>
-              {loading ? 'Processing...' : 'Continue to Payment'}
-            </button>
-          </form>
-        )}
-        {step === 2 && (
-          <div className="checkout-step">
-            <h2>Order Summary</h2>
-            <div className="order-summary">
-              <div className="summary-section">
-                <h3>Produk</h3>
-                {itemsToShow.map((item) => (
-                  <div key={`${item._id}-${item.sku || ''}`} className="summary-item">
-                    <div className="item-info">
-                      <div className="item-name">{item.name}</div>
-                      <div className="item-qty">x{item.quantity ? item.quantity : 1}</div>
-                    </div>
-                    <div className="item-price">{formatPrice((item.price || 0) * (item.quantity ? item.quantity : 1))}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="summary-section">
-                <h3>Shipping</h3>
-                <div className="summary-item">
-                  <div className="item-info">
-                    <div className="item-name">{form.name}</div>
-                    <div className="item-region">Region: {selectedRegion}</div>
-                    <div className="item-address">{form.address1}, {form.city}, {form.state}, {form.country}</div>
-                  </div>
-                  <div className="item-price">{formatPrice(shippingCost)}</div>
+          <div className="checkout-layout">
+            <div className="checkout-left">
+              <form className="shipping-form checkout-panel" onSubmit={handleSubmit} autoComplete="off">
+                <div className="checkout-panel-header">
+                  <h2>Shipping Details</h2>
+                  <p>Secure checkout for premium streetwear delivery.</p>
                 </div>
-              </div>
-              <div className="summary-total">
-                <div className="total-row">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(subtotal)}</span>
-                </div>
-                <div className="total-row">
-                  <span>Shipping</span>
-                  <span>{formatPrice(shippingCost)}</span>
-                </div>
-                <div className="total-row total-final">
-                  <span>Total</span>
-                  <span>{formatPrice(total)}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{ margin: '32px 0 16px 0' }}>
-              <label htmlFor="shipping-method" style={{ fontWeight: 600, fontSize: 15, marginBottom: 6, display: 'block' }}>Shipping Method</label>
-              <input
-                id="shipping-method"
-                type="text"
-                value={selectedRegion ? `Economy International (${formatPrice(shippingCost)})` : ''}
-                readOnly
-                style={{ width: '100%', padding: '12px 16px', fontSize: 16, border: '1.5px solid #ddd', borderRadius: 8, background: '#f3f4f6', color: '#222', marginBottom: 8 }}
-                placeholder="Shipping method will appear here"
-              />
-            </div>
 
-            <div style={{ margin: '20px 0 8px 0' }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, display: 'block' }}>Select Payment Method</label>
-              <div style={{ display: 'grid', gap: 10 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="stripe"
-                    checked={paymentMethod === 'stripe'}
-                    onChange={() => setPaymentMethod('stripe')}
-                  />
-                  Credit Card (Stripe)
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="paypal"
-                    checked={paymentMethod === 'paypal'}
-                    onChange={() => setPaymentMethod('paypal')}
-                  />
-                  PayPal
-                </label>
-              </div>
-            </div>
-
-            <div className="payment-actions">
-              <button className="btn btn-secondary" onClick={() => setStep(1)}>
-                Back
-              </button>
-              {paymentMethod === 'stripe' && (
-                <button className="btn btn-primary" onClick={handleStripeCheckout} disabled={loading}>
-                  {loading ? 'Processing...' : 'Pay with Stripe'}
-                </button>
-              )}
-            </div>
-
-            {paymentMethod === 'paypal' && (
-              <div style={{ marginTop: 16 }}>
-                {import.meta.env.VITE_PAYPAL_CLIENT_ID ? (
-                  <PayPalScriptProvider
-                    options={{
-                      clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID,
-                      currency: 'USD',
-                      intent: 'capture',
-                    }}
-                  >
-                    <PayPalButtons
-                      style={{ layout: 'vertical', shape: 'rect', label: 'paypal' }}
-                      createOrder={async () => createPaypalOrder()}
-                      onApprove={async (data) => {
-                        try {
-                          const approvedOrderId = data.orderID;
-                          if (!approvedOrderId) {
-                            throw new Error('PayPal order ID not found');
-                          }
-                          await capturePaypalOrder(approvedOrderId);
-                          navigate(`/payment-success?provider=paypal&orderID=${approvedOrderId}`);
-                        } catch (err) {
-                          setPopupError(err instanceof Error ? err.message : 'PayPal payment failed');
-                        }
-                      }}
-                      onError={() => {
-                        setPopupError('PayPal checkout encountered an error');
-                      }}
+                <div className="checkout-form-grid">
+                  <div className="form-group">
+                    <label htmlFor="country">Country *</label>
+                    <input
+                      type="text"
+                      name="country"
+                      id="country"
+                      value={form.country}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.country && touched.country ? 'input-error' : ''}
+                      placeholder="Enter your country"
+                      required
                     />
-                  </PayPalScriptProvider>
-                ) : (
-                  <div className="error-message">
-                    <p>PayPal is not configured. Set VITE_PAYPAL_CLIENT_ID in frontend environment.</p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="region">Region *</label>
+                    <select
+                      name="region"
+                      id="region"
+                      value={selectedRegion}
+                      onChange={e => setSelectedRegion(e.target.value)}
+                      onBlur={() => setTouched(t => ({ ...t, region: true }))}
+                      className={errors.region && touched.region ? 'input-error' : ''}
+                      required
+                    >
+                      <option value="">Select region</option>
+                      {shippingRegions.map(region => (
+                        <option key={region.label} value={region.label}>{region.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="name">Full Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.name && touched.name ? 'input-error' : ''}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="phone">Phone Number *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.phone && touched.phone ? 'input-error' : ''}
+                      required
+                      placeholder="e.g. +62 81234567890"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="address1">Address Line 1 *</label>
+                    <input
+                      type="text"
+                      name="address1"
+                      id="address1"
+                      value={form.address1}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.address1 && touched.address1 ? 'input-error' : ''}
+                      required
+                      placeholder="Street address, P.O. box, company name, c/o"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="address2">Address Line 2</label>
+                    <input
+                      type="text"
+                      name="address2"
+                      id="address2"
+                      value={form.address2}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Apartment, suite, unit, building, floor, etc. (optional)"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="city">City *</label>
+                    <input
+                      type="text"
+                      name="city"
+                      id="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.city && touched.city ? 'input-error' : ''}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="state">State/Province/Region *</label>
+                    <input
+                      type="text"
+                      name="state"
+                      id="state"
+                      value={form.state}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.state && touched.state ? 'input-error' : ''}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="postalCode">Postal/ZIP Code *</label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      id="postalCode"
+                      value={form.postalCode}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={errors.postalCode && touched.postalCode ? 'input-error' : ''}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label htmlFor="notes">Additional Notes</label>
+                    <textarea
+                      name="notes"
+                      id="notes"
+                      value={form.notes}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      rows={2}
+                      placeholder="Notes for courier (optional)"
+                    />
+                  </div>
+                </div>
+
+                <div className="shipping-method-block">
+                  <label htmlFor="shipping-method">Shipping Method</label>
+                  <input
+                    id="shipping-method"
+                    className="shipping-method-display"
+                    type="text"
+                    value={shippingMethodText}
+                    readOnly
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? 'Processing...' : 'Continue to Payment'}
+                </button>
+              </form>
+            </div>
+
+            <aside className="checkout-right">
+              {renderOrderSummaryCard()}
+            </aside>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="checkout-layout">
+            <div className="checkout-left">
+              <div className="checkout-step checkout-panel">
+                <div className="checkout-panel-header">
+                  <h2>Payment Method</h2>
+                  <p>Select your preferred secure payment channel.</p>
+                </div>
+
+                <div className="shipping-method-block">
+                  <label htmlFor="shipping-method-review">Shipping Method</label>
+                  <input
+                    id="shipping-method-review"
+                    className="shipping-method-display"
+                    type="text"
+                    value={shippingMethodText}
+                    readOnly
+                  />
+                </div>
+
+                <div className="payment-methods">
+                  <label className={`payment-card ${paymentMethod === 'stripe' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="stripe"
+                      checked={paymentMethod === 'stripe'}
+                      onChange={() => setPaymentMethod('stripe')}
+                    />
+                    <div className="payment-card-content">
+                      <span>Credit Card</span>
+                      <small>Stripe secure checkout</small>
+                    </div>
+                  </label>
+
+                  <label className={`payment-card ${paymentMethod === 'paypal' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="paypal"
+                      checked={paymentMethod === 'paypal'}
+                      onChange={() => setPaymentMethod('paypal')}
+                    />
+                    <div className="payment-card-content">
+                      <span>PayPal</span>
+                      <small>Secure PayPal checkout</small>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="payment-actions">
+                  <button className="btn btn-secondary" onClick={() => setStep(1)}>
+                    Back
+                  </button>
+                  {paymentMethod === 'stripe' && (
+                    <button className="btn btn-primary" onClick={handleStripeCheckout} disabled={loading}>
+                      {loading ? 'Processing...' : 'Pay with Stripe'}
+                    </button>
+                  )}
+                </div>
+
+                {paymentMethod === 'paypal' && (
+                  <div className="paypal-wrapper">
+                    {import.meta.env.VITE_PAYPAL_CLIENT_ID ? (
+                      <PayPalScriptProvider
+                        options={{
+                          clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID,
+                          currency: 'USD',
+                          intent: 'capture',
+                        }}
+                      >
+                        <PayPalButtons
+                          style={{ layout: 'vertical', shape: 'rect', label: 'paypal' }}
+                          createOrder={async () => createPaypalOrder()}
+                          onApprove={async (data) => {
+                            try {
+                              const approvedOrderId = data.orderID;
+                              if (!approvedOrderId) {
+                                throw new Error('PayPal order ID not found');
+                              }
+                              await capturePaypalOrder(approvedOrderId);
+                              navigate(`/payment-success?provider=paypal&orderID=${approvedOrderId}`);
+                            } catch (err) {
+                              setPopupError(err instanceof Error ? err.message : 'PayPal payment failed');
+                            }
+                          }}
+                          onError={() => {
+                            setPopupError('PayPal checkout encountered an error');
+                          }}
+                        />
+                      </PayPalScriptProvider>
+                    ) : (
+                      <div className="error-message">
+                        <p>PayPal is not configured. Set VITE_PAYPAL_CLIENT_ID in frontend environment.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+            </div>
+
+            <aside className="checkout-right">
+              {renderOrderSummaryCard()}
+            </aside>
           </div>
         )}
       </div>

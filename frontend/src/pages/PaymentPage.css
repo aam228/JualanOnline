@@ -9,7 +9,7 @@
 .payment-card {
   background: white;
   border-radius: 12px;
-  padding: 40px;
+  padding: 16px;
   max-width: 500px;
   width: 100%;
   animation: slideUp 0.4s ease-out;

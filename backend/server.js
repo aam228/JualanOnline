@@ -17,6 +17,7 @@ const uploadRouter = require('./routes/upload');
 const flawsRouter = require('./routes/flaws');
 const rajaOngkirRouter = require('./routes/rajaongkir');
 const authRouter = require('./routes/auth');
+const cartRouter = require('./routes/cart');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -57,6 +58,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/admin/products', adminProductsRouter);
 app.use('/api/shipping', shippingRouter);
 app.use('/api/payments', paymentsRouter);
+app.use('/api/cart', cartRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/flaws', flawsRouter);
 app.use('/api/rajaongkir', rajaOngkirRouter);
