@@ -27,22 +27,50 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
     let priceToUse = 0;
     let skuCode = '';
 
+    const toPositiveNumber = (value: unknown): number | null => {
+      const numeric = typeof value === 'number' ? value : Number(value);
+      return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+    };
+
+    const resolvePositivePrice = () => {
+      const candidates = [
+        skuToUse?.price,
+        product.price,
+        product.priceRange?.min,
+        ...(Array.isArray(product.skus) ? product.skus.map((sku) => sku.price) : []),
+      ];
+
+      for (const candidate of candidates) {
+        const numericCandidate = toPositiveNumber(candidate);
+        if (numericCandidate) {
+          return numericCandidate;
+        }
+      }
+
+      return 0;
+    };
+
     if (skuToUse) {
       stockToUse = skuToUse.stock;
-      priceToUse = skuToUse.price;
+      priceToUse = skuToUse.price > 0 ? skuToUse.price : resolvePositivePrice();
       skuCode = skuToUse.sku;
     } else if (typeof product.stock === 'number' && product.stock > 0) {
       stockToUse = product.stock;
-      priceToUse = product.priceRange?.min || product.price || 0;
+      priceToUse = resolvePositivePrice();
       skuCode = product._id || product.name || 'SINGLE';
     } else {
       alert('Produk tidak tersedia');
       return;
     }
 
+    if (priceToUse <= 0) {
+      alert('Harga produk tidak valid');
+      return;
+    }
+
     addToCart({
       _id: product._id,
-      slug: product.slug,
+      slug: product.slug || product._id || product.name.toLowerCase().replace(/\s+/g, '-'),
       name: product.name,
       price: priceToUse,
       image: primaryImage?.url || '',

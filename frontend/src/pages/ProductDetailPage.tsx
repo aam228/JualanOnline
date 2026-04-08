@@ -91,6 +91,30 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
+
+    const toPositiveNumber = (value: unknown): number | null => {
+      const numeric = typeof value === 'number' ? value : Number(value);
+      return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+    };
+
+    const resolvePositivePrice = (): number => {
+      const candidates = [
+        selectedSKU?.price,
+        product.price,
+        product.priceRange?.min,
+        ...(Array.isArray(product.skus) ? product.skus.map((skuItem) => skuItem.price) : []),
+      ];
+
+      for (const candidate of candidates) {
+        const numericCandidate = toPositiveNumber(candidate);
+        if (numericCandidate) {
+          return numericCandidate;
+        }
+      }
+
+      return 0;
+    };
+
     let price: number;
     let stock: number;
     let sku: string;
@@ -98,19 +122,19 @@ const ProductDetailPage = () => {
     let image = product.images[0]?.url || '📦';
 
     if (selectedSKU) {
-      price = selectedSKU.price;
+      price = selectedSKU.price > 0 ? selectedSKU.price : resolvePositivePrice();
       stock = selectedSKU.stock;
       sku = selectedSKU.sku;
       selectedVariantsToSend = selectedVariants;
     } else if (Array.isArray(product.skus) && product.skus.length === 0) {
       // Produk seed tanpa SKU/variant
-      price = typeof product.price === 'number' ? product.price : (product.priceRange?.min ?? 0);
+      price = resolvePositivePrice();
       stock = typeof product.stock === 'number' ? product.stock : 1; // default 1 jika tidak ada stock
       sku = product._id || product.name || 'SINGLE';
       selectedVariantsToSend = undefined;
     } else {
       // Fallback lama
-      price = product.priceRange?.min ?? product.price ?? 0;
+      price = resolvePositivePrice();
       stock = typeof product.stock === 'number' ? product.stock : 0;
       sku = product._id || product.name || 'SINGLE';
       selectedVariantsToSend = undefined;

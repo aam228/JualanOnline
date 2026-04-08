@@ -317,6 +317,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [toast.show]);
 
   const addToCart = (product: Omit<CartItem, 'quantity'>) => {
+    const safePrice = toSafeNumber(product.price, 0);
+    if (safePrice <= 0) {
+      console.error('[CART DEBUG] addToCart blocked due to invalid price:', product);
+      setToast({
+        show: true,
+        message: 'Harga produk tidak valid, gagal menambahkan ke keranjang',
+        productName: product.name,
+      });
+      return;
+    }
+
     setCart(prevCart => {
       // Create unique ID based on product ID and SKU
       const cartItemId = getCartItemId(product);
@@ -344,7 +355,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         message: 'Produk berhasil ditambahkan ke keranjang',
         productName: product.name
       });
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, price: safePrice, quantity: 1 }];
     });
   };
 

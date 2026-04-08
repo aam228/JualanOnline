@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getDB } = require('../config/db');
 const { verifyToken } = require('../middleware/auth');
+const { ObjectId } = require('mongodb');
 
 // ==========================================
 // UTILITY: Cart item ID generation
@@ -26,7 +27,7 @@ function isValidCartItem(item) {
     item.name.trim().length > 0 &&
     typeof item.price === 'number' &&
     Number.isFinite(item.price) &&
-    item.price >= 0 &&
+    item.price > 0 &&
     typeof item.image === 'string' &&
     typeof item.category === 'string' &&
     typeof item.description === 'string' &&
@@ -39,12 +40,88 @@ function isValidCartItem(item) {
   );
 }
 
+function pickPositiveNumber(...values) {
+  for (const value of values) {
+    const numeric = typeof value === 'number' ? value : Number(value);
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric;
+    }
+  }
+  return null;
+}
+
+function extractPriceFromProductDoc(productDoc, cartItem) {
+  if (!productDoc || typeof productDoc !== 'object') return null;
+
+  const skus = Array.isArray(productDoc.skus) ? productDoc.skus : [];
+  const matchedSku = skus.find((skuItem) => skuItem?.sku && skuItem.sku === cartItem.sku);
+  const activeSku = skus.find((skuItem) => skuItem?.isActive && typeof skuItem.price === 'number' && skuItem.price > 0);
+
+  return pickPositiveNumber(
+    matchedSku?.price,
+    activeSku?.price,
+    productDoc?.price,
+    productDoc?.priceRange?.min
+  );
+}
+
+async function resolveProductDoc(productsCollection, cartItem) {
+  const queries = [];
+
+  if (cartItem.slug) {
+    queries.push({ slug: cartItem.slug });
+  }
+
+  if (cartItem._id) {
+    queries.push({ _id: cartItem._id });
+    if (ObjectId.isValid(cartItem._id)) {
+      queries.push({ _id: new ObjectId(cartItem._id) });
+    }
+  }
+
+  for (const query of queries) {
+    const doc = await productsCollection.findOne(query);
+    if (doc) return doc;
+  }
+
+  return null;
+}
+
+async function recoverItemWithProductData(item, productsCollection) {
+  if (item.price > 0) return item;
+
+  const productDoc = await resolveProductDoc(productsCollection, item);
+  if (!productDoc) {
+    console.warn('[CART] ⚠️ PUT: Could not find product document for zero-price item:', item._id || item.slug);
+    return item;
+  }
+
+  const recoveredPrice = extractPriceFromProductDoc(productDoc, item);
+  if (!recoveredPrice) {
+    console.warn('[CART] ⚠️ PUT: Product found but no valid positive price for item:', item._id || item.slug);
+    return item;
+  }
+
+  const recoveredCurrency = typeof productDoc.currency === 'string' ? productDoc.currency : item.currency;
+  console.log('[CART] ✅ PUT: Recovered zero-price item from products collection:', {
+    item: item._id || item.slug,
+    recoveredPrice,
+  });
+
+  return {
+    ...item,
+    price: recoveredPrice,
+    currency: recoveredCurrency,
+  };
+}
+
 function toStringOrFallback(value, fallback = '') {
   return typeof value === 'string' ? value : fallback;
 }
 
 function toNumberOrFallback(value, fallback = 0) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
 }
 
 function normalizeIncomingCartItem(item) {
@@ -186,24 +263,6 @@ router.put('/', verifyToken, async (req, res) => {
     console.log(`[CART] PUT: Normalized incoming items count ${normalizedIncomingItems.length}`);
     console.log('[CART] PUT normalized items sample:', JSON.stringify(normalizedIncomingItems[0] || null));
 
-    // Filter and validate items
-    const safeItems = normalizedIncomingItems.filter(item => {
-      const valid = isValidCartItem(item);
-      if (!valid) {
-        console.warn('[CART] ⚠️ PUT: Filtering out invalid item:', item);
-      }
-      return valid;
-    });
-
-    const removedCount = normalizedIncomingItems.length - safeItems.length;
-    if (removedCount > 0) {
-      console.warn(`[CART] ⚠️ PUT: Removed ${removedCount} invalid items`);
-    }
-
-    // Normalize items (dedup)
-    const normalizedItems = normalizeCartItems(safeItems);
-    console.log(`[CART] PUT: Normalized to ${normalizedItems.length} items after dedup`);
-
     const db = getDB();
     if (!db) {
       console.error('[CART] ❌ PUT: Database not connected');
@@ -211,6 +270,34 @@ router.put('/', verifyToken, async (req, res) => {
     }
 
     const cartsCollection = db.collection('carts');
+    const productsCollection = db.collection('products');
+
+    const recoveredItems = await Promise.all(
+      normalizedIncomingItems.map((item) => recoverItemWithProductData(item, productsCollection))
+    );
+
+    const recoveredCount = recoveredItems.filter((item, index) => item.price > normalizedIncomingItems[index].price).length;
+    if (recoveredCount > 0) {
+      console.log(`[CART] PUT: Recovered price for ${recoveredCount} item(s)`);
+    }
+
+    // Filter and validate items
+    const safeItems = recoveredItems.filter(item => {
+      const valid = isValidCartItem(item);
+      if (!valid) {
+        console.warn('[CART] ⚠️ PUT: Filtering out invalid item:', item);
+      }
+      return valid;
+    });
+
+    const removedCount = recoveredItems.length - safeItems.length;
+    if (removedCount > 0) {
+      console.warn(`[CART] ⚠️ PUT: Removed ${removedCount} invalid items`);
+    }
+
+    // Normalize items (dedup)
+    const normalizedItems = normalizeCartItems(safeItems);
+    console.log(`[CART] PUT: Normalized to ${normalizedItems.length} items after dedup`);
 
     // Upsert: update if exists, insert if new
     const result = await cartsCollection.updateOne(
@@ -269,9 +356,8 @@ router.delete('/', verifyToken, async (req, res) => {
     }
 
     const cartsCollection = db.collection('carts');
-
     // Clear items but keep cart record with timestamps
-    const result = await cartsCollection.updateOne(
+    await cartsCollection.updateOne(
       { userId: userId },
       {
         $set: {
