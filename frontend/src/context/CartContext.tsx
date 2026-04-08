@@ -1,7 +1,23 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 const CART_STORAGE_KEY = 'shoppingCart';
+
+// ==========================================
+// DEBUG LOGGING UTILITY (can be toggled globally)
+// ==========================================
+const DEBUG_CART = true; // Set to false to disable verbose logs
+
+function logCartDebug(title: string, data?: any) {
+  if (DEBUG_CART) {
+    if (data !== undefined) {
+      console.log(`[CART DEBUG] ${title}`, data);
+    } else {
+      console.log(`[CART DEBUG] ${title}`);
+    }
+  }
+}
 
 export interface CartItem {
   _id: string;
@@ -100,7 +116,7 @@ const loadInitialCart = (): CartItem[] => {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { token, isAuthenticated, loading: authLoading } = useAuth();
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = getApiBaseUrl();
 
   const [cart, setCart] = useState<CartItem[]>(loadInitialCart);
   const [toast, setToast] = useState<ToastNotification>({
@@ -110,27 +126,45 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   });
   const hasLoadedRemoteCart = useRef(false);
 
+  // ==========================================
+  // EFFECT 1: Auto-save cart to localStorage
+  // ==========================================
   useEffect(() => {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      logCartDebug('Saved cart to localStorage, items:', cart.length);
     } catch (error) {
-      console.error('Failed to persist cart to localStorage:', error);
+      console.error('❌ Failed to persist cart to localStorage:', error);
     }
   }, [cart]);
 
+  // ==========================================
+  // EFFECT 2: Load cart from backend when user logs in
+  // ==========================================
   useEffect(() => {
-    if (authLoading) return;
+    // Skip if auth is still loading
+    if (authLoading) {
+      logCartDebug('Auth still loading, skipping remote cart load');
+      return;
+    }
 
+    // If not authenticated, reset the flag for next login
     if (!isAuthenticated || !token) {
+      logCartDebug('User not authenticated, resetting remote cart flag');
       hasLoadedRemoteCart.current = false;
       return;
     }
 
-    if (hasLoadedRemoteCart.current) return;
+    // If already loaded, don't fetch again
+    if (hasLoadedRemoteCart.current) {
+      logCartDebug('Remote cart already loaded, skipping duplicate load');
+      return;
+    }
 
     let cancelled = false;
 
     const loadRemoteCart = async () => {
+      logCartDebug('Starting remote cart load...');
       try {
         const response = await fetch(`${API_BASE_URL}/cart`, {
           headers: {
@@ -138,17 +172,58 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           },
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+          console.warn(`⚠️ Backend returned ${response.status}:`, response.statusText);
+          logCartDebug('Backend cart fetch failed:', response.status);
+          // If 401, token is invalid - will be handled by auth context
+          // If 404 or other errors, treat as empty cart (first-time user)
+          hasLoadedRemoteCart.current = true;
+          return;
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.includes('application/json')) {
+          console.warn('⚠️ Backend response is not JSON');
+          return;
+        }
 
         const data = await response.json();
-        const remoteItems = Array.isArray(data?.items) ? data.items.filter(isValidCartItem) : [];
+        logCartDebug('Backend returned cart:', data);
 
-        if (cancelled) return;
+        if (cancelled) {
+          logCartDebug('Cart load cancelled (component unmounted)');
+          return;
+        }
 
-        setCart((prevCart) => normalizeCartItems([...prevCart, ...remoteItems]));
+        // Validate remote items
+        const remoteItems = Array.isArray(data?.items) 
+          ? data.items.filter(isValidCartItem) 
+          : [];
+        
+        const removedCount = (data?.items?.length || 0) - remoteItems.length;
+        if (removedCount > 0) {
+          console.warn(`⚠️ Removed ${removedCount} invalid items from remote cart`);
+        }
+
+        logCartDebug('Valid remote items:', remoteItems.length);
+
+        // Merge with local cart: local items take precedence (they're fresher)
+        setCart((prevCart) => {
+          const merged = normalizeCartItems([...remoteItems, ...prevCart]);
+          logCartDebug('Merged cart (remote + local):', merged.length);
+          return merged;
+        });
+
         hasLoadedRemoteCart.current = true;
+        console.log('✅ Remote cart loaded and merged successfully');
       } catch (error) {
-        console.error('Failed to load cart from backend:', error);
+        console.error('❌ Error loading cart from backend:', error);
+        logCartDebug('Fetch error details:', {
+          url: `${API_BASE_URL}/cart`,
+          errorMessage: error instanceof Error ? error.message : String(error)
+        });
+        // Don't fail silently - at least log it
+        hasLoadedRemoteCart.current = true;
       }
     };
 
@@ -159,12 +234,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [API_BASE_URL, authLoading, isAuthenticated, token]);
 
+  // ==========================================
+  // EFFECT 3: Auto-sync cart to backend (debounced)
+  // ==========================================
   useEffect(() => {
-    if (!isAuthenticated || !token || !hasLoadedRemoteCart.current) return;
+    // Only sync if user is authenticated AND remote cart was already loaded
+    if (!isAuthenticated || !token || !hasLoadedRemoteCart.current) {
+      logCartDebug('Sync skipped: auth/token/loaded check failed');
+      return;
+    }
+
+    logCartDebug('Syncing cart to backend, items:', cart.length);
 
     const saveRemoteCart = async () => {
       try {
-        await fetch(`${API_BASE_URL}/cart`, {
+        const response = await fetch(`${API_BASE_URL}/cart`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -172,14 +256,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           },
           body: JSON.stringify({ items: cart }),
         });
+
+        if (!response.ok) {
+          console.warn(`⚠️ Backend rejected cart sync (${response.status}):`, response.statusText);
+          logCartDebug('Cart sync failed:', response.status);
+          return;
+        }
+
+        logCartDebug('✅ Cart synced to backend');
       } catch (error) {
-        console.error('Failed to sync cart to backend:', error);
+        console.error('❌ Failed to sync cart to backend:', error);
+        logCartDebug('Sync error details:', {
+          url: `${API_BASE_URL}/cart`,
+          errorMessage: error instanceof Error ? error.message : String(error)
+        });
       }
     };
 
     saveRemoteCart();
   }, [API_BASE_URL, cart, isAuthenticated, token]);
 
+  // ==========================================
+  // EFFECT 4: Toast auto-hide
+  // ==========================================
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
