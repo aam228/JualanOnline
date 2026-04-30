@@ -9,6 +9,16 @@ interface ProductDetailProps {
 
 const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
   const { addToCart } = useCart();
+  const categoryLabel = typeof product.category === 'string'
+    ? product.category
+    : product.category?.name || '';
+  const primaryPrice = product.priceRange?.min ?? (typeof product.price === 'number' ? product.price : Number(product.price) || 0);
+  const shortDescription = typeof product.description === 'string'
+    ? product.description
+    : product.description?.short || '';
+  const longDescription = typeof product.description === 'string'
+    ? product.description
+    : product.description?.long || '';
 
   const formatPrice = (price: number) => {
     return (price !== undefined && product.currency)
@@ -74,8 +84,8 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
       name: product.name,
       price: priceToUse,
       image: primaryImage?.url || '',
-      category: product.category.name,
-      description: product.description.short,
+        category: categoryLabel,
+        description: shortDescription,
       stock: stockToUse,
       currency: product.currency,
       sku: skuCode,
@@ -104,9 +114,9 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
           </div>
           
           <div className="detail-info">
-            <span className="detail-category">{product.category.name}</span>
+            <span className="detail-category">{categoryLabel}</span>
             <h2 className="detail-name">{product.name}</h2>
-            <p className="detail-price">{formatPrice(product.priceRange.min)}</p>
+            <p className="detail-price">{formatPrice(primaryPrice)}</p>
             
             <div className="detail-stock">
               <span className={totalStock > 0 ? 'in-stock' : 'out-stock'}>
@@ -114,7 +124,7 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
               </span>
             </div>
             
-            <p className="detail-description">{product.description.long}</p>
+            <p className="detail-description">{longDescription}</p>
             
             <button 
               className="btn btn-add-cart" 
