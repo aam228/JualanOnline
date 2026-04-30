@@ -6,19 +6,19 @@ const Testimonials: React.FC = () => {
 
   const testimonials = [
     {
-      content: "Bekerja dengan tim ini sangat transformatif untuk bisnis kami. Keahlian dan dedikasi mereka membantu kami mencapai hasil melebihi ekspektasi.",
+      content: "Working with this team has been transformative for our business. Their expertise and dedication helped us achieve results beyond expectations.",
       author: "Sarah Mitchell",
       role: "CEO, InnovateTech",
       avatar: "👩‍💼"
     },
     {
-      content: "Tingkat profesionalisme dan keunggulan teknis sangat luar biasa. Mereka memberikan solusi yang sempurna selaras dengan visi dan melampaui tujuan kami.",
+      content: "Their level of professionalism and technical excellence is outstanding. They delivered a solution that perfectly matched our vision and exceeded our goals.",
       author: "James Rodriguez",
       role: "CTO, Digital Solutions Inc",
       avatar: "👨‍💻"
     },
     {
-      content: "Dari konsep hingga deployment, pengalamannya sangat mulus. Pendekatan inovatif dan perhatian terhadap detail membuat perbedaan besar dalam kesuksesan proyek kami.",
+      content: "From concept to deployment, the experience was seamless. Their innovative approach and attention to detail made a major difference in our project's success.",
       author: "Emily Chen",
       role: "Product Director, FutureCorp",
       avatar: "👩"
@@ -28,9 +28,9 @@ const Testimonials: React.FC = () => {
   return (
     <section id="testimonials" className="testimonials">
       <div className="container">
-        <h2 className="section-title animate-fade">Dipercaya oleh Pemimpin Industri</h2>
+        <h2 className="section-title animate-fade">Trusted by Industry Leaders</h2>
         <p className="section-subtitle animate-fade" style={{ animationDelay: "0.2s" }}>
-          Lihat apa kata klien kami tentang bekerja dengan kami
+          See what our clients have to say about working with us
         </p>
         
         <div className="testimonial-slider">
@@ -60,7 +60,7 @@ const Testimonials: React.FC = () => {
               key={index}
               className={`dot ${activeIndex === index ? 'active' : ''}`}
               onClick={() => setActiveIndex(index)}
-              aria-label={`Lihat testimoni ${index + 1}`}
+              aria-label={`View testimonial ${index + 1}`}
             />
           ))}
         </div>

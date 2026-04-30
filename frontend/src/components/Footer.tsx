@@ -14,7 +14,7 @@ const Footer = () => {
               <FiShoppingBag size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
               TechMart
             </div>
-            <p>Marketplace terpercaya untuk kebutuhan teknologi Anda. Produk berkualitas dengan harga terbaik dan pengiriman cepat.</p>
+            <p>A trusted marketplace for your technology needs. Quality products, great prices, and fast shipping.</p>
             <div className="social-links">
               <a href="#" aria-label="Instagram"><FiInstagram size={18} /></a>
               <a href="#" aria-label="Facebook"><FiFacebook size={18} /></a>
@@ -23,35 +23,35 @@ const Footer = () => {
             </div>
           </div>
           <div className="footer-links">
-            <h3>Kategori</h3>
+            <h3>Categories</h3>
             <ul>
-              <li><a href="#">Elektronik</a></li>
+              <li><a href="#">Electronics</a></li>
               <li><a href="#">Audio</a></li>
-              <li><a href="#">Wearable</a></li>
-              <li><a href="#">Aksesoris</a></li>
+              <li><a href="#">Wearables</a></li>
+              <li><a href="#">Accessories</a></li>
             </ul>
           </div>
           <div className="footer-links">
-            <h3>Bantuan</h3>
+            <h3>Help</h3>
             <ul>
-              <li><a href="#">Cara Belanja</a></li>
-              <li><a href="#">Pembayaran</a></li>
-              <li><a href="#">Pengiriman</a></li>
-              <li><a href="#">Retur & Garansi</a></li>
+              <li><a href="#">How to Shop</a></li>
+              <li><a href="#">Payments</a></li>
+              <li><a href="#">Shipping</a></li>
+              <li><a href="#">Returns & Warranty</a></li>
             </ul>
           </div>
           <div className="footer-links">
-            <h3>Tentang</h3>
+            <h3>About</h3>
             <ul>
-              <li><a href="#">Tentang Kami</a></li>
-              <li><a href="#">Hubungi Kami</a></li>
-              <li><a href="#">Kebijakan Privasi</a></li>
-              <li><a href="#">Syarat & Ketentuan</a></li>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms & Conditions</a></li>
             </ul>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; {currentYear} TechMart. Semua hak dilindungi.</p>
+          <p>&copy; {currentYear} TechMart. All rights reserved.</p>
         </div>
       </div>
     </footer>

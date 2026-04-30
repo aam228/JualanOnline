@@ -322,7 +322,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error('[CART DEBUG] addToCart blocked due to invalid price:', product);
       setToast({
         show: true,
-        message: 'Harga produk tidak valid, gagal menambahkan ke keranjang',
+        message: 'Invalid product price. Unable to add to cart.',
         productName: product.name,
       });
       return;
@@ -339,7 +339,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (existingItem) {
         setToast({
           show: true,
-          message: 'Produk berhasil ditambahkan ke keranjang',
+          message: 'Product added to cart successfully',
           productName: product.name
         });
         return prevCart.map(item => {
@@ -352,7 +352,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       setToast({
         show: true,
-        message: 'Produk berhasil ditambahkan ke keranjang',
+        message: 'Product added to cart successfully',
         productName: product.name
       });
       return [...prevCart, { ...product, price: safePrice, quantity: 1 }];

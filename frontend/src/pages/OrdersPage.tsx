@@ -116,11 +116,11 @@ const OrdersPage = () => {
     switch (status) {
       case 'completed':
       case 'paid':
-        return 'Berhasil';
+        return 'Completed';
       case 'pending':
-        return 'Menunggu Pembayaran';
+        return 'Awaiting Payment';
       case 'failed':
-        return 'Gagal';
+        return 'Failed';
       default:
         return status;
     }
@@ -141,12 +141,12 @@ const OrdersPage = () => {
   };
 
   const formatPaymentMethod = (method?: string) => {
-    if (!method) return 'Metode tidak tersedia';
+    if (!method) return 'Method unavailable';
     const methodMap: { [key: string]: string } = {
-      'card': 'Kartu Kredit/Debit',
+      'card': 'Credit/Debit Card',
       'paypal': 'PayPal',
-      'id_bank_transfer': 'Transfer Bank',
-      'bank_transfer': 'Transfer Bank',
+      'id_bank_transfer': 'Bank Transfer',
+      'bank_transfer': 'Bank Transfer',
       'wallet': 'E-Wallet',
       'ideal': 'iDEAL (Netherlands)',
     };
@@ -162,10 +162,10 @@ const OrdersPage = () => {
     return (
       <div className="orders-page">
         <div className="orders-container">
-          <h1>Riwayat Pesanan</h1>
+          <h1>Order History</h1>
           <div className="loading-spinner">
             <div className="spinner"></div>
-            <p>Memuat riwayat pesanan Anda...</p>
+            <p>Loading your order history...</p>
           </div>
         </div>
       </div>
@@ -177,11 +177,11 @@ const OrdersPage = () => {
     return (
       <div className="orders-page">
         <div className="orders-container">
-          <h1>Riwayat Pesanan</h1>
+          <h1>Order History</h1>
           <div className="error-message">
             <p>❌ {error}</p>
             <button onClick={() => window.location.reload()} className="btn-retry">
-              Coba Lagi
+              Try Again
             </button>
           </div>
         </div>
@@ -194,15 +194,15 @@ const OrdersPage = () => {
     return (
       <div className="orders-page">
         <div className="orders-container">
-          <h1>Riwayat Pesanan</h1>
+          <h1>Order History</h1>
           <div className="orders-empty">
             <div className="empty-icon">🛍️</div>
-            <p className="empty-title">Belum ada pesanan</p>
+            <p className="empty-title">No orders yet</p>
             <p className="empty-subtitle">
-              Anda belum pernah melakukan pembelian. Mulai berbelanja sekarang untuk melihat riwayat pesanan Anda.
+              You have not made a purchase yet. Start shopping now to view your order history.
             </p>
             <button onClick={() => navigate('/')} className="btn-shop-now">
-              Belanja Sekarang
+              Shop Now
             </button>
           </div>
         </div>
@@ -214,7 +214,7 @@ const OrdersPage = () => {
   return (
     <div className="orders-page">
       <div className="orders-container">
-        <h1>Riwayat Pesanan</h1>
+        <h1>Order History</h1>
 
         <div className="orders-table-wrapper">
           <table className="orders-table">
@@ -222,11 +222,11 @@ const OrdersPage = () => {
               <tr>
                 <th>No</th>
                 <th>Order ID</th>
-                <th>Tanggal Transaksi</th>
+                <th>Transaction Date</th>
                 <th>Provider</th>
-                <th>Metode Pembayaran</th>
+                <th>Payment Method</th>
                 <th>Transaction ID</th>
-                <th>Total Pembayaran</th>
+                <th>Payment Total</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -234,7 +234,7 @@ const OrdersPage = () => {
               {orders.map((order, index) => (
                 <tr key={order.id || order.orderId} className={index % 2 === 0 ? 'even' : 'odd'}>
                   <td className="col-no">{index + 1}</td>
-                  <td className="col-order-id" onClick={() => copyToClipboard(order.orderId)} title="Klik untuk copy Order ID">{order.orderId}</td>
+                  <td className="col-order-id" onClick={() => copyToClipboard(order.orderId)} title="Click to copy Order ID">{order.orderId}</td>
                   <td className="col-date">{formatDate(order.createdAt)}</td>
                   <td className="col-method">{(order.paymentProvider || 'stripe').toUpperCase()}</td>
                   <td className="col-method">{formatPaymentMethod(order.paymentMethod)}</td>
@@ -254,7 +254,7 @@ const OrdersPage = () => {
 
         <div className="orders-footer">
           <button onClick={() => navigate('/')} className="btn-back-home">
-            ← Kembali ke Beranda
+            ← Back to Home
           </button>
         </div>
       </div>

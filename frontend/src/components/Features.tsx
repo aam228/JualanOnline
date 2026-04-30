@@ -8,42 +8,42 @@ const Features: React.FC = () => {
   const features = [
     {
       icon: '🚀',
-      title: 'Pengembangan Cepat',
-      description: 'Percepat timeline proyek Anda dengan proses pengembangan yang efisien dan metodologi terbukti.'
+      title: 'Fast Delivery',
+      description: 'Speed up your project timeline with an efficient delivery process and proven methodology.'
     },
     {
       icon: '💡',
-      title: 'Inovasi Terdepan',
-      description: 'Tetap unggul dengan solusi teknologi mutakhir yang disesuaikan dengan kebutuhan bisnis Anda.'
+      title: 'Leading Innovation',
+      description: 'Stay ahead with cutting-edge technology solutions tailored to your business needs.'
     },
     {
       icon: '🎯',
-      title: 'Fokus pada Tujuan',
-      description: 'Kami fokus memberikan hasil terukur yang selaras dengan objektif bisnis Anda.'
+      title: 'Goal Driven',
+      description: 'We focus on delivering measurable results aligned with your business objectives.'
     },
     {
       icon: '🤝',
-      title: 'Dukungan Penuh',
-      description: 'Tim ahli siap membantu Anda 24/7 di setiap langkah perjalanan Anda.'
+      title: 'Full Support',
+      description: 'Our expert team is ready to support you 24/7 at every step of the journey.'
     },
     {
       icon: '🔒',
-      title: 'Keamanan Enterprise',
-      description: 'Protokol keamanan tingkat bank untuk melindungi data dan memastikan kepatuhan.'
+      title: 'Enterprise Security',
+      description: 'Bank-grade security protocols to protect your data and ensure compliance.'
     },
     {
       icon: '📊',
-      title: 'Analitik & Insight',
-      description: 'Analitik real-time dan pelaporan untuk membuat keputusan berbasis data dengan percaya diri.'
+      title: 'Analytics & Insights',
+      description: 'Real-time analytics and reporting to help you make data-driven decisions with confidence.'
     }
   ];
 
   return (
     <section id="features" className="features">
       <div className="container">
-        <h2 className="section-title animate-fade">Mengapa Memilih Kami</h2>
+        <h2 className="section-title animate-fade">Why Choose Us</h2>
         <p className="section-subtitle animate-fade" style={{ animationDelay: "0.2s" }}>
-          Solusi komprehensif yang dirancang untuk mengangkat bisnis Anda
+          Comprehensive solutions designed to elevate your business
         </p>
         
         <div className="features-grid">

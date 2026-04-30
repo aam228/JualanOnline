@@ -15,80 +15,80 @@ const FAQPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const faqData: FAQItem[] = [
-    // Pesanan
+    // Orders
     {
       id: 'order-1',
-      category: 'pesanan',
-      question: 'Bagaimana cara melakukan pemesanan?',
-      answer: 'Pilih produk yang Anda inginkan, tambahkan ke keranjang, lalu lanjutkan ke halaman checkout untuk menyelesaikan pembayaran.',
+      category: 'orders',
+      question: 'How do I place an order?',
+      answer: 'Choose the product you want, add it to your cart, then continue to checkout to complete your payment.',
     },
     {
       id: 'order-2',
-      category: 'pesanan',
-      question: 'Bagaimana cara melihat status pesanan saya?',
-      answer: 'Anda dapat melihat status pesanan melalui halaman "Riwayat Pesanan" setelah login ke akun Anda.',
+      category: 'orders',
+      question: 'How can I check my order status?',
+      answer: 'You can view your order status on the Order History page after logging in to your account.',
     },
-    // Pembayaran
+    // Payment
     {
       id: 'payment-1',
-      category: 'pembayaran',
-      question: 'Metode pembayaran apa saja yang tersedia?',
-      answer: 'Kami menerima pembayaran menggunakan kartu kredit, kartu debit, dan metode pembayaran lain yang didukung oleh sistem pembayaran kami.',
+      category: 'payment',
+      question: 'Which payment methods are available?',
+      answer: 'We accept credit cards, debit cards, and other payment methods supported by our payment system.',
     },
     {
       id: 'payment-2',
-      category: 'pembayaran',
-      question: 'Mengapa pembayaran saya gagal?',
-      answer: 'Pembayaran dapat gagal karena saldo tidak cukup, kartu tidak valid, atau sistem bank menolak transaksi. Silakan coba kembali atau gunakan metode pembayaran lain.',
+      category: 'payment',
+      question: 'Why did my payment fail?',
+      answer: 'A payment can fail because of insufficient funds, an invalid card, or a bank rejection. Please try again or use another payment method.',
     },
-    // Pengiriman
+    // Shipping
     {
       id: 'shipping-1',
-      category: 'pengiriman',
-      question: 'Berapa lama waktu pengiriman?',
-      answer: 'Waktu pengiriman biasanya memakan waktu beberapa hari kerja tergantung lokasi pengiriman dan layanan kurir yang digunakan.',
+      category: 'shipping',
+      question: 'How long does shipping take?',
+      answer: 'Shipping usually takes a few business days depending on the delivery location and courier service used.',
     },
     {
       id: 'shipping-2',
-      category: 'pengiriman',
-      question: 'Bagaimana cara melacak pesanan saya?',
-      answer: 'Setelah pesanan dikirim, Anda akan menerima informasi pelacakan yang dapat digunakan untuk memantau status pengiriman.',
+      category: 'shipping',
+      question: 'How can I track my order?',
+      answer: 'After your order ships, you will receive tracking information that you can use to monitor delivery status.',
     },
-    // Produk
+    // Products
     {
       id: 'product-1',
-      category: 'produk',
-      question: 'Apakah produk yang dijual original?',
-      answer: 'Semua produk yang tersedia di website kami dijamin original dan telah melalui proses kurasi sebelum dijual.',
+      category: 'products',
+      question: 'Are the products authentic?',
+      answer: 'All products available on our website are authentic and have been curated before being sold.',
     },
     {
       id: 'product-2',
-      category: 'produk',
-      question: 'Apakah produk dapat ditukar atau dikembalikan?',
-      answer: 'Produk dapat ditukar atau dikembalikan sesuai dengan kebijakan pengembalian yang berlaku di website ini.',
+      category: 'products',
+      question: 'Can products be exchanged or returned?',
+      answer: 'Products can be exchanged or returned according to the return policy in effect on this website.',
     },
-    // Akun
+    // Account
     {
       id: 'account-1',
-      category: 'akun',
-      question: 'Bagaimana cara membuat akun?',
-      answer: 'Klik tombol daftar pada halaman login dan isi informasi yang diminta untuk membuat akun baru.',
+      category: 'account',
+      question: 'How do I create an account?',
+      answer: 'Click the register button on the login page and fill in the required information to create a new account.',
     },
     {
       id: 'account-2',
-      category: 'akun',
-      question: 'Saya lupa password, bagaimana cara meresetnya?',
-      answer: 'Gunakan fitur lupa password di halaman login untuk menerima instruksi reset password melalui email.',
+      category: 'account',
+      question: 'I forgot my password. How do I reset it?',
+      answer: 'Use the forgot password feature on the login page to receive password reset instructions by email.',
     },
   ];
 
   const categories = [
-    { id: 'all', label: 'Semua' },
-    { id: 'pesanan', label: 'Pesanan' },
-    { id: 'pembayaran', label: 'Pembayaran' },
-    { id: 'pengiriman', label: 'Pengiriman' },
-    { id: 'produk', label: 'Produk' },
-    { id: 'akun', label: 'Akun' },
+    { id: 'all', label: 'All' },
+    { id: 'orders', label: 'Orders' },
+    { id: 'payment', label: 'Payment' },
+    { id: 'shipping', label: 'Shipping' },
+    { id: 'products', label: 'Products' },
+    { id: 'account', label: 'Account' },
   ];
 
   const filteredFAQ =
@@ -106,9 +106,9 @@ const FAQPage = () => {
         {/* Header Section */}
         <div className="faq-header">
           <h1>FAQ</h1>
-          <h2>Pertanyaan Umum</h2>
+          <h2>Frequently Asked Questions</h2>
           <p className="faq-subtitle">
-            Temukan jawaban untuk pertanyaan yang paling sering diajukan mengenai pesanan, pembayaran, akun, dan pengiriman.
+            Find answers to the most frequently asked questions about orders, payment, account access, and shipping.
           </p>
         </div>
 
@@ -150,15 +150,15 @@ const FAQPage = () => {
         {/* Contact Support Section */}
         <div className="faq-contact">
           <div className="contact-content">
-            <h3>Masih punya pertanyaan?</h3>
+            <h3>Still have questions?</h3>
             <p>
-              Jika Anda tidak menemukan jawaban yang Anda cari, silakan hubungi tim support kami.
+              If you cannot find the answer you need, please contact our support team.
             </p>
             <button
               className="btn-contact"
               onClick={() => navigate('/')}
             >
-              Hubungi Kami
+              Contact Us
             </button>
           </div>
         </div>

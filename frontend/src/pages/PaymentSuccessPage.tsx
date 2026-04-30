@@ -6,7 +6,7 @@ import './PaymentSuccessPage.css';
 const PaymentSuccessPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { clearCart } = useCart();  // ✅ Clear cart after payment
+  const { clearCart } = useCart();
   
   const [loading, setLoading] = useState(true);
   const [paymentData, setPaymentData] = useState<any>(null);
@@ -120,7 +120,7 @@ const PaymentSuccessPage = () => {
             return `${idx + 1}. ${item?.name || 'Item'}${skuText} x${qty}`;
           })
           .join('\n')
-      : '- Data item belum tersedia';
+      : '- Item data is not available yet';
 
     return [
       'PAYMENT_VALIDATION_DATA',
@@ -177,7 +177,7 @@ const PaymentSuccessPage = () => {
     const timeoutId = window.setTimeout(() => {
       const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
       if (!popup) {
-        setWaWarning('Browser menahan tab baru. Silakan klik tombol WhatsApp di bawah untuk membuka ulang.');
+        setWaWarning('The browser blocked the new tab. Click the WhatsApp button below to try again.');
       }
     }, 0);
 
@@ -186,13 +186,13 @@ const PaymentSuccessPage = () => {
 
   const handleOpenWhatsApp = () => {
     if (!waUrl) {
-      setWaWarning('Template WhatsApp belum siap. Silakan tunggu sebentar atau cek konfigurasi nomor penjual.');
+      setWaWarning('The WhatsApp template is not ready yet. Please wait a moment or check the seller number configuration.');
       return;
     }
 
     const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
     if (!popup) {
-      setWaWarning('Browser menahan tab baru. Silakan klik tombol WhatsApp sekali lagi atau izinkan popup.');
+      setWaWarning('The browser blocked the new tab. Click the WhatsApp button again or allow popups.');
     }
   };
 
@@ -201,7 +201,7 @@ const PaymentSuccessPage = () => {
       <div className="payment-success-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Memverifikasi pembayaran...</p>
+          <p>Verifying payment...</p>
         </div>
       </div>
     );
@@ -212,12 +212,12 @@ const PaymentSuccessPage = () => {
       <div className="payment-success-container">
         <div className="success-card failed">
           <div className="icon failed-icon">❌</div>
-          <h1>Pembayaran Gagal</h1>
+          <h1>Payment Failed</h1>
           <p className="status-message">
-            {error || 'Terjadi kesalahan saat memproses pembayaran'}
+            {error || 'An error occurred while processing the payment'}
           </p>
           <button onClick={() => navigate('/')} className="btn-home">
-            Kembali ke Beranda
+            Back to Home
           </button>
         </div>
       </div>
@@ -230,9 +230,9 @@ const PaymentSuccessPage = () => {
         <div className="success-header">
           <div className="success-icon">✓</div>
           <div className="success-title-wrap">
-            <h1 className="success-title">Pembayaran Berhasil</h1>
-            <p className="success-subtitle">Pesanan sedang diproses</p>
-            <p className="success-subtitle success-subtitle-muted">WhatsApp akan dibuka otomatis di tab baru. Jika diblokir, gunakan tombol WhatsApp di bawah.</p>
+            <h1 className="success-title">Payment Successful</h1>
+            <p className="success-subtitle">Your order is now being processed</p>
+            <p className="success-subtitle success-subtitle-muted">WhatsApp will open automatically in a new tab. If it is blocked, use the WhatsApp button below.</p>
             {waWarning && <p className="success-subtitle success-subtitle-muted">{waWarning}</p>}
           </div>
         </div>
@@ -241,27 +241,27 @@ const PaymentSuccessPage = () => {
 
         <div className="transaction-details">
           <div className="detail-row">
-            <span className="detail-label">No. Pesanan</span>
+            <span className="detail-label">Order Number</span>
             <span className="detail-value">{paymentData.order?.orderId || stripeSessionId || paypalOrderIdFromUrl}</span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">Tanggal</span>
+            <span className="detail-label">Date</span>
             <span className="detail-value">{paymentData.order ? formatDate(paymentData.order.createdAt) : '-'}</span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">Metode Pembayaran</span>
+            <span className="detail-label">Payment Method</span>
             <span className="detail-value">{(paymentData?.provider || activeProvider || '-').toUpperCase()}</span>
           </div>
           <div className="detail-row">
             <span className="detail-label">Status</span>
             <span className="detail-value">
               <span className="status-badge status-badge-compact">
-                {paymentData.status === 'complete' ? 'Berhasil' : paymentData.status}
+                {paymentData.status === 'complete' ? 'Completed' : paymentData.status}
               </span>
             </span>
           </div>
           <div className="detail-row detail-row-total">
-            <span className="detail-label">Total Pembayaran</span>
+            <span className="detail-label">Payment Total</span>
             <span className="detail-value total">{formatPrice(paymentData.amount)}</span>
           </div>
         </div>
@@ -270,22 +270,22 @@ const PaymentSuccessPage = () => {
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 2a10 10 0 1 0 10 10A10.012 10.012 0 0 0 12 2Zm1 15h-2v-6h2Zm0-8h-2V7h2Z" fill="currentColor" />
           </svg>
-          <p>Tim kami akan menghubungi kamu via WhatsApp dalam 1×24 jam untuk konfirmasi pengiriman.</p>
+          <p>Our team will contact you via WhatsApp within 24 hours to confirm shipping.</p>
         </div>
 
         <div className="action-buttons">
           {waUrl && (
             <button type="button" onClick={handleOpenWhatsApp} className="btn btn-whatsapp">
-              Hubungi WhatsApp
+              Open WhatsApp
             </button>
           )}
           <button onClick={() => navigate('/')} className="btn btn-home" type="button">
-            Kembali ke Beranda
+            Back to Home
           </button>
         </div>
 
         <div className="support-info">
-          <p>Ada pertanyaan? <a href="mailto:support@example.com">Hubungi kami</a></p>
+          <p>Have questions? <a href="mailto:support@example.com">Contact us</a></p>
         </div>
       </div>
     </div>

@@ -6,24 +6,24 @@ const ContactPage = () => {
       <div className="contact-container">
         {/* Hero / Header Section */}
         <div className="contact-header">
-          <h1>Hubungi Kami</h1>
+          <h1>Contact Us</h1>
           <p className="contact-subtitle">
-            Jika Anda memiliki pertanyaan mengenai produk, pesanan, atau kerja sama, jangan ragu untuk menghubungi kami melalui informasi kontak di bawah ini.
+            If you have questions about products, orders, or partnerships, feel free to reach out using the contact information below.
           </p>
         </div>
 
         {/* About Store Section */}
         <div className="about-store">
-          <h2>Tentang Toko Kami</h2>
+          <h2>About Our Store</h2>
           <div className="about-content">
             <p>
-              Kami adalah toko yang berfokus pada produk fashion dan streetwear pilihan. Setiap produk dipilih dengan standar kualitas tinggi untuk memastikan pelanggan mendapatkan produk terbaik.
+              We are a store focused on curated fashion and streetwear products. Every item is selected with high quality standards to ensure customers receive the best products.
             </p>
             <p>
-              Kami percaya bahwa fashion bukan hanya tentang pakaian, tetapi juga tentang ekspresi diri dan gaya hidup. Melalui website ini, kami berkomitmen untuk memberikan pengalaman berbelanja yang terbaik dengan koleksi produk yang terseleksi dan layanan pelanggan yang responsif.
+              We believe fashion is not only about clothing, but also about self-expression and lifestyle. Through this website, we are committed to delivering the best shopping experience with a curated collection and responsive customer service.
             </p>
             <p>
-              Kepuasan pelanggan adalah prioritas utama kami. Terima kasih telah menjadi bagian dari keluarga besar toko kami!
+              Customer satisfaction is our top priority. Thank you for being part of our store family!
             </p>
           </div>
         </div>

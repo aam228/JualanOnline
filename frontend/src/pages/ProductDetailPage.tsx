@@ -235,7 +235,7 @@ const ProductDetailPage = () => {
             <div className="main-image">
               <img 
                 src={product?.images?.[selectedImageIndex]?.url || 'https://via.placeholder.com/500'} 
-                alt={product?.images?.[selectedImageIndex]?.alt || product?.name || 'Produk'}
+                alt={product?.images?.[selectedImageIndex]?.alt || product?.name || 'Product'}
               />
             </div>
             <div className="image-thumbnails">

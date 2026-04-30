@@ -14,14 +14,14 @@ const Hero: React.FC = () => {
     <section className="hero">
       <div className="container">
         <div className="hero-content animate-fade" style={{ animationDelay: "0.2s" }}>
-          <h1>Transformasi Digital untuk Bisnis Anda</h1>
+          <h1>Digital Transformation for Your Business</h1>
           <p>
-            Kami menghadirkan solusi teknologi inovatif yang mendorong pertumbuhan, 
-            meningkatkan efisiensi, dan memberdayakan tim Anda mencapai hasil luar biasa.
+            We deliver innovative technology solutions that drive growth,
+            improve efficiency, and empower your team to achieve outstanding results.
           </p>
           <div className="hero-buttons">
-            <a href="#" className="btn">Mulai Sekarang</a>
-            <a href="#features" className="btn btn-outline" onClick={scrollToFeatures}>Lihat Solusi</a>
+            <a href="#" className="btn">Get Started</a>
+            <a href="#features" className="btn btn-outline" onClick={scrollToFeatures}>See Solutions</a>
           </div>
         </div>
       </div>

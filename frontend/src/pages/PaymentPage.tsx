@@ -28,7 +28,7 @@ const countryOptions = [
   { code: 'SG', name: 'Singapore', currency: 'sgd' },
   { code: 'MY', name: 'Malaysia', currency: 'myr' },
   { code: 'JP', name: 'Japan', currency: 'jpy' },
-  // Tambahkan negara & currency lain sesuai kebutuhan
+  // Add more countries and currencies as needed
 ];
 
 const PaymentForm = ({
@@ -75,7 +75,7 @@ const PaymentForm = ({
     setError(null);
 
     if (!stripe || !elements || !clientSecret) {
-      setError('Payment system not ready');
+      setError('Payment system is not ready yet');
       return;
     }
 
@@ -121,12 +121,12 @@ const PaymentForm = ({
   return (
     <div className="payment-form-container">
       <div className="payment-card">
-        <h2>Pembayaran</h2>
+        <h2>Payment</h2>
 
-        {/* Pilihan Negara & Mata Uang */}
+        {/* Country and currency selection */}
         <div className="payment-summary">
           <div className="summary-row">
-            <span>Negara</span>
+            <span>Country</span>
             <select
               value={selectedCountry}
               onChange={e => {
@@ -142,7 +142,7 @@ const PaymentForm = ({
             </select>
           </div>
           <div className="summary-row">
-            <span>Mata Uang</span>
+            <span>Currency</span>
             <select
               value={selectedCurrency}
               onChange={e => setSelectedCurrency(e.target.value)}
@@ -155,11 +155,11 @@ const PaymentForm = ({
             </select>
           </div>
           <div className="summary-row">
-            <span>Total Pembayaran</span>
+            <span>Payment Total</span>
             <span className="amount">{formatPrice(amount)}</span>
           </div>
           <div className="summary-row">
-            <span>Nama</span>
+            <span>Name</span>
             <span>{customerName}</span>
           </div>
           <div className="summary-row">
@@ -168,7 +168,7 @@ const PaymentForm = ({
           </div>
         </div>
 
-        {/* Error Message */}
+        {/* Error message */}
         {error && (
           <div className="payment-error">
             <div className="error-icon">⚠️</div>
@@ -176,10 +176,10 @@ const PaymentForm = ({
           </div>
         )}
 
-        {/* Payment Form */}
+        {/* Payment form */}
         <form onSubmit={handleSubmit} className="payment-form">
           <div className="form-group">
-            <label htmlFor="payment-element">Pilih Metode Pembayaran</label>
+            <label htmlFor="payment-element">Choose payment method</label>
             <PaymentElement id="payment-element" onReady={() => setPaymentElementLoaded(true)} />
           </div>
 
@@ -190,21 +190,21 @@ const PaymentForm = ({
               className="btn-cancel"
               disabled={loading}
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="btn-pay"
               disabled={loading || !stripe || !clientSecret || !paymentElementLoaded}
             >
-              {loading ? 'Memproses...' : `Bayar ${formatPrice(amount)}`}
+              {loading ? 'Processing...' : `Pay ${formatPrice(amount)}`}
             </button>
           </div>
         </form>
 
-        {/* Security Notice */}
+        {/* Security notice */}
         <div className="payment-security">
-          <p>Pembayaran Anda aman dan dienkripsi dengan teknologi terbaru</p>
+          <p>Your payment is secure and encrypted with the latest technology.</p>
         </div>
       </div>
     </div>
@@ -243,7 +243,7 @@ const PaymentPage = () => {
   if (!state || !state.amount || !state.customerEmail || !state.customerName) {
     return (
       <div className="payment-error-container">
-        <div>Data pembayaran tidak lengkap. <a href="/">Kembali ke beranda</a></div>
+        <div>Payment details are incomplete. <a href="/">Return to home</a></div>
       </div>
     );
   }
@@ -259,7 +259,7 @@ const PaymentPage = () => {
   if (!clientSecret) {
     return (
       <div className="payment-loading-container">
-        <div>Memuat pembayaran...</div>
+        <div>Loading payment...</div>
       </div>
     );
   }

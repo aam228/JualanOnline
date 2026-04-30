@@ -27,7 +27,7 @@ const ProductList = () => {
       setProducts(publishedProducts);
     } catch (err) {
       console.error('Failed to fetch products:', err);
-      setError('Gagal memuat produk. Pastikan backend server berjalan.');
+      setError('Failed to load products. Make sure the backend server is running.');
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ const ProductList = () => {
   if (loading) {
     return (
       <section className="product-list-section">
-        <div className="loading">Memuat produk...</div>
+        <div className="loading">Loading products...</div>
       </section>
     );
   }
@@ -145,7 +145,7 @@ const ProductList = () => {
           })
         ) : (
           <div className="no-products">
-            <p>Tidak ada produk yang ditemukan</p>
+            <p>No products were found</p>
           </div>
         )}
       </div>

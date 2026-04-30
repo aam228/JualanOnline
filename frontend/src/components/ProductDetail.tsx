@@ -69,12 +69,12 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
       priceToUse = resolvePositivePrice();
       skuCode = product._id || product.name || 'SINGLE';
     } else {
-      alert('Produk tidak tersedia');
+      alert('Product is unavailable');
       return;
     }
 
     if (priceToUse <= 0) {
-      alert('Harga produk tidak valid');
+      alert('The product price is invalid');
       return;
     }
 
@@ -120,7 +120,7 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
             
             <div className="detail-stock">
               <span className={totalStock > 0 ? 'in-stock' : 'out-stock'}>
-                {totalStock > 0 ? `✓ Stok: ${totalStock}` : '✗ Stok Habis'}
+                {totalStock > 0 ? `✓ In Stock: ${totalStock}` : '✗ Out of Stock'}
               </span>
             </div>
             
@@ -131,7 +131,7 @@ const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
               onClick={handleAddToCart}
               disabled={totalStock === 0}
             >
-              🛒 Tambah ke Keranjang
+              🛒 Add to Cart
             </button>
           </div>
         </div>
