@@ -14,7 +14,6 @@ const PaymentSuccessPage = () => {
   const [waUrl, setWaUrl] = useState('');
   const [waWarning, setWaWarning] = useState<string | null>(null);
   const waOpenedRef = useRef(false);
-  const [isStepsOpen, setIsStepsOpen] = useState(false);
 
   // Query params: Stripe uses session_id, PayPal uses orderID
   const queryParams = new URLSearchParams(location.search);
@@ -229,100 +228,65 @@ const PaymentSuccessPage = () => {
     <div className="payment-success-container">
       <div className="success-card">
         <div className="success-header">
-          <div className="icon success-icon">✓</div>
-          <div className="success-copy">
-            <h1>Pembayaran Berhasil!</h1>
-            <p className="status-message status-message-tight">Terima kasih telah melakukan pembayaran</p>
-            <p className="status-message status-message-tight">WhatsApp akan dibuka otomatis di tab baru. Jika diblokir, gunakan tombol WhatsApp di bawah.</p>
-            {waWarning && <p className="status-message status-message-tight">{waWarning}</p>}
+          <div className="success-icon">✓</div>
+          <div className="success-title-wrap">
+            <h1 className="success-title">Pembayaran Berhasil</h1>
+            <p className="success-subtitle">Pesanan sedang diproses</p>
+            <p className="success-subtitle success-subtitle-muted">WhatsApp akan dibuka otomatis di tab baru. Jika diblokir, gunakan tombol WhatsApp di bawah.</p>
+            {waWarning && <p className="success-subtitle success-subtitle-muted">{waWarning}</p>}
           </div>
-          <div className="success-metadata">
-            <div className="meta-pill">
-              <span className="meta-label">Order ID</span>
-              <span className="meta-value">{paymentData.order?.orderId || stripeSessionId || paypalOrderIdFromUrl}</span>
-            </div>
-            <div className="meta-pill">
-              <span className="meta-label">Total</span>
-              <span className="meta-value meta-value-amount">{formatPrice(paymentData.amount)}</span>
-            </div>
-            <div className="meta-pill">
-              <span className="meta-label">Status</span>
-              <span className="meta-value status-badge status-badge-compact">
+        </div>
+
+        <hr className="section-divider" />
+
+        <div className="transaction-details">
+          <div className="detail-row">
+            <span className="detail-label">No. Pesanan</span>
+            <span className="detail-value">{paymentData.order?.orderId || stripeSessionId || paypalOrderIdFromUrl}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Tanggal</span>
+            <span className="detail-value">{paymentData.order ? formatDate(paymentData.order.createdAt) : '-'}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Metode Pembayaran</span>
+            <span className="detail-value">{(paymentData?.provider || activeProvider || '-').toUpperCase()}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Status</span>
+            <span className="detail-value">
+              <span className="status-badge status-badge-compact">
                 {paymentData.status === 'complete' ? 'Berhasil' : paymentData.status}
               </span>
-            </div>
+            </span>
+          </div>
+          <div className="detail-row detail-row-total">
+            <span className="detail-label">Total Pembayaran</span>
+            <span className="detail-value total">{formatPrice(paymentData.amount)}</span>
           </div>
         </div>
 
-        <div className="success-content">
-          <div className="order-details">
-            {paymentData.order && (
-              <>
-                <div className="detail-row">
-                  <span className="label">Nama Pelanggan</span>
-                  <span className="value">{paymentData.order.customerName}</span>
-                </div>
-
-                <div className="detail-row">
-                  <span className="label">Email</span>
-                  <span className="value">{paymentData.order.customerEmail}</span>
-                </div>
-
-                <div className="detail-row">
-                  <span className="label">Tanggal</span>
-                  <span className="value">{formatDate(paymentData.order.createdAt)}</span>
-                </div>
-              </>
-            )}
-
-            <div className="detail-row detail-row-full">
-              <span className="label">Metode</span>
-              <span className="value">{(paymentData?.provider || activeProvider || '-').toUpperCase()}</span>
-            </div>
-          </div>
-
-          <div className="action-panel">
-            <div className="action-buttons action-buttons-compact">
-              {waUrl && (
-                <button type="button" onClick={handleOpenWhatsApp} className="btn-orders">
-                  Buka WhatsApp di Tab Baru
-                </button>
-              )}
-              <button onClick={() => setIsStepsOpen(true)} className="btn-home btn-home-compact" type="button">
-                Langkah Selanjutnya
-              </button>
-              <button onClick={() => navigate('/orders')} className="btn-home btn-home-compact" type="button">
-                Lihat Pesanan Saya
-              </button>
-              <button onClick={() => navigate('/')} className="btn-home btn-home-compact" type="button">
-                Kembali ke Beranda
-              </button>
-            </div>
-
-            <div className="support-info support-info-compact">
-              <p>Ada pertanyaan? <a href="mailto:support@example.com">Hubungi kami</a></p>
-            </div>
-          </div>
+        <div className="info-strip">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a10 10 0 1 0 10 10A10.012 10.012 0 0 0 12 2Zm1 15h-2v-6h2Zm0-8h-2V7h2Z" fill="currentColor" />
+          </svg>
+          <p>Tim kami akan menghubungi kamu via WhatsApp dalam 1×24 jam untuk konfirmasi pengiriman.</p>
         </div>
 
-        {isStepsOpen && (
-          <div className="steps-modal" role="dialog" aria-modal="true" aria-labelledby="stepsModalTitle">
-            <div className="steps-modal-backdrop" onClick={() => setIsStepsOpen(false)} />
-            <div className="steps-modal-card">
-              <div className="steps-modal-header">
-                <h3 id="stepsModalTitle">Langkah Selanjutnya</h3>
-                <button type="button" className="steps-modal-close" onClick={() => setIsStepsOpen(false)} aria-label="Tutup">
-                  ×
-                </button>
-              </div>
-              <ol>
-                <li>Anda akan menerima email konfirmasi pembayaran</li>
-                <li>Pesanan Anda akan segera diproses</li>
-                <li>Barang akan dikirim sesuai jadwal pengiriman yang dipilih</li>
-              </ol>
-            </div>
-          </div>
-        )}
+        <div className="action-buttons">
+          {waUrl && (
+            <button type="button" onClick={handleOpenWhatsApp} className="btn btn-whatsapp">
+              Hubungi WhatsApp
+            </button>
+          )}
+          <button onClick={() => navigate('/')} className="btn btn-home" type="button">
+            Kembali ke Beranda
+          </button>
+        </div>
+
+        <div className="support-info">
+          <p>Ada pertanyaan? <a href="mailto:support@example.com">Hubungi kami</a></p>
+        </div>
       </div>
     </div>
   );
