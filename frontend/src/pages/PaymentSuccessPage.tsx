@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './PaymentSuccessPage.css';
@@ -13,8 +13,6 @@ const PaymentSuccessPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [waUrl, setWaUrl] = useState('');
   const [waWarning, setWaWarning] = useState<string | null>(null);
-  const waOpenedRef = useRef(false);
-  const hasRedirectedRef = useRef(false);
 
   // Query params: Stripe uses session_id, PayPal uses orderID
   const queryParams = new URLSearchParams(location.search);
@@ -163,33 +161,22 @@ const PaymentSuccessPage = () => {
       return;
     }
 
-    if (hasRedirectedRef.current) {
-      return;
-    }
-
     const message = buildWhatsAppMessage();
     const targetUrl = `https://wa.me/${sellerWaNumber}?text=${encodeURIComponent(message)}`;
     setWaUrl(targetUrl);
   }, [loading, error, paymentData, sellerWaNumber]);
 
-  useEffect(() => {
-    if (!waUrl || waOpenedRef.current) {
+  const handleOpenWhatsApp = () => {
+    if (!waUrl) {
+      setWaWarning('Template WhatsApp belum siap. Silakan tunggu sebentar atau cek konfigurasi nomor penjual.');
       return;
     }
 
-    waOpenedRef.current = true;
-    hasRedirectedRef.current = true;
-
-    const timeoutId = window.setTimeout(() => {
-      const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
-      if (!popup) {
-        setWaWarning('Browser menahan tab baru. Mengarahkan ke WhatsApp di tab yang sama.');
-        window.location.assign(waUrl);
-      }
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [waUrl]);
+    const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
+    if (!popup) {
+      setWaWarning('Browser menahan tab baru. Silakan klik tombol WhatsApp sekali lagi atau izinkan popup.');
+    }
+  };
 
   if (loading) {
     return (
@@ -275,14 +262,15 @@ const PaymentSuccessPage = () => {
             <li>Pesanan Anda akan segera diproses</li>
             <li>Barang akan dikirim sesuai jadwal pengiriman yang dipilih</li>
           </ol>
+          {waUrl && <p className="status-message">Template WhatsApp sudah disiapkan. Silakan buka di tab baru kalau perlu mengirim data transaksi.</p>}
         </div>
 
         {/* Action Buttons */}
         <div className="action-buttons">
           {waUrl && (
-            <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn-orders">
-              Buka WhatsApp Sekarang
-            </a>
+            <button type="button" onClick={handleOpenWhatsApp} className="btn-orders">
+              Buka WhatsApp di Tab Baru
+            </button>
           )}
           <button onClick={() => navigate('/orders')} className="btn-orders">
             Lihat Pesanan Saya
