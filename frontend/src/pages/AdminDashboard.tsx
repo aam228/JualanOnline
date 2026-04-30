@@ -1,11 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Pagination from '../components/Pagination';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AlertTriangle, CheckCircle2, Package, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../services/api';
-import { Link } from 'react-router-dom';
-import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
-import './AdminDashboard.css';
 
 interface PriceRange {
   min: number;
@@ -13,65 +10,92 @@ interface PriceRange {
   currency: string;
 }
 
-interface Sku {
-  price: number;
-  currency: string;
+interface ProductImage {
+  url: string;
+  alt?: string;
 }
 
 interface Product {
   _id: string;
   name: string;
   brand: string;
+  size?: string;
+  condition?: string;
+  description?: string;
   price?: number;
   priceRange?: PriceRange;
-  skus?: Sku[];
-  condition: string;
+  stock?: number;
+  images?: ProductImage[];
   isPublished: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
+
+const LOW_STOCK_THRESHOLD = 3;
+
+const getProductPriceLabel = (product: Product) => {
+  if (product.priceRange) {
+    return `${product.priceRange.currency} ${product.priceRange.max.toLocaleString('id-ID')}`;
+  }
+
+  if (typeof product.price === 'number' && Number.isFinite(product.price)) {
+    return `Rp ${product.price.toLocaleString('id-ID')}`;
+  }
+
+  return 'Price not set';
+};
+
+const getProductStock = (product: Product) => {
+  if (typeof product.stock === 'number' && Number.isFinite(product.stock)) {
+    return product.stock;
+  }
+
+  return 0;
+};
+
+const getProductImage = (product: Product) => product.images?.[0]?.url || '';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchProducts();
-  }, [page]);
+  }, []);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`${API_BASE_URL}/admin/products?page=${page}&limit=10`, {
+
+      const response = await fetch(`${API_BASE_URL}/admin/products?limit=100&page=1`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      
+
       if (response.status === 401) {
         setError('Unauthorized. Please login again.');
         navigate('/login');
         return;
       }
-      
+
       if (response.status === 403) {
         setError('You do not have permission to access this page.');
         navigate('/');
         return;
       }
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
-      
+
       const data = await response.json();
-      setProducts(data.data);
-      setTotalPages(data.pagination.pages);
-    } catch (error) {
-      console.error('Error fetching products:', error);
+      setProducts(Array.isArray(data.data) ? data.data : []);
+    } catch (fetchError) {
+      console.error('Error fetching products:', fetchError);
       setError('Failed to load products');
     } finally {
       setLoading(false);
@@ -79,124 +103,228 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
-    
+    if (!window.confirm('Delete this product from the catalog?')) {
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      
+
       if (response.status === 401 || response.status === 403) {
         setError('Unauthorized. Please login again.');
         navigate('/login');
         return;
       }
-      
-      if (response.ok) {
-        setProducts(products.filter(p => p._id !== id));
-      } else {
-        setError('Failed to delete product');
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
       }
-    } catch (error) {
-      console.error('Error deleting product:', error);
+
+      setProducts((previous) => previous.filter((product) => product._id !== id));
+    } catch (deleteError) {
+      console.error('Error deleting product:', deleteError);
       setError('Failed to delete product');
     }
   };
 
+  const filteredProducts = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    if (!query) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      return [product.name, product.brand, product.size, product.condition]
+        .filter(Boolean)
+        .some((value) => value?.toLowerCase().includes(query));
+    });
+  }, [products, searchTerm]);
+
+  const summary = useMemo(() => {
+    const total = products.length;
+    const published = products.filter((product) => product.isPublished).length;
+    const draft = total - published;
+    const lowStock = products.filter((product) => getProductStock(product) <= LOW_STOCK_THRESHOLD).length;
+
+    return { total, published, draft, lowStock };
+  }, [products]);
+
   return (
-    <div className="admin-dashboard">
-      <div className="admin-dashboard-container">
-        {/* Header */}
-        <div className="admin-dashboard-header">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.06),_transparent_28%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="admin-dashboard-title">Products</h1>
-            <p className="admin-dashboard-desc">Manage your vintage clothing inventory</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">Admin workspace</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Product overview</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Focused dashboard for a small clothing catalog. The main goal is quick visibility of stock, publish state, and direct access to edit or remove items.
+            </p>
           </div>
-          <Link 
+          <Link
             to="/admin/products/new"
-            className="admin-dashboard-add-btn"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
           >
-            <FiPlus size={20} />
+            <Plus size={18} />
             Add Product
           </Link>
         </div>
 
+        <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Total products</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">{summary.total}</p>
+            <p className="mt-2 text-sm text-slate-500">All items in the limited catalog.</p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Published</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-emerald-600">{summary.published}</p>
+            <p className="mt-2 text-sm text-slate-500">Visible to customers.</p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Draft</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-amber-600">{summary.draft}</p>
+            <p className="mt-2 text-sm text-slate-500">Still hidden from the storefront.</p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Low stock</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-rose-600">{summary.lowStock}</p>
+            <p className="mt-2 text-sm text-slate-500">Items at or below {LOW_STOCK_THRESHOLD} units.</p>
+          </div>
+        </div>
+
+        <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            <Search size={18} className="shrink-0" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              placeholder="Search by name, brand, size, or condition"
+            />
+          </label>
+        </div>
+
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-gray-500">Loading...</div>
+          <div className="flex items-center justify-center rounded-3xl border border-slate-200 bg-white px-6 py-16 shadow-sm">
+            <div className="text-sm font-medium text-slate-500">Loading products...</div>
           </div>
         ) : error ? (
-          <div className="admin-error-message">
-            <p>{error}</p>
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-5 text-sm text-rose-700 shadow-sm">
+            {error}
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+              <Package size={24} />
+            </div>
+            <h2 className="mt-4 text-xl font-semibold text-slate-900">No products yet</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+              Add the first item to start managing the limited catalog.
+            </p>
+            <Link
+              to="/admin/products/new"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+            >
+              <Plus size={18} />
+              Add Product
+            </Link>
           </div>
         ) : (
-          <>
-            {/* Table */}
-            <div className="admin-dashboard-table">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Brand</th>
-                      <th>Price</th>
-                      <th>Condition</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map(product => (
-                      <tr key={product._id}>
-                        <td>{product.name}</td>
-                        <td>{product.brand || '-'}</td>
-                        <td>
-                          {product.priceRange ? (
-                            `${product.priceRange.currency} ${product.priceRange.max.toLocaleString('id-ID')}`
-                          ) : (product.price !== undefined && product.price !== null && !isNaN(Number(product.price))) ? (
-                            `${(product as any).currency ? (product as any).currency : 'Rp'} ${Number(product.price).toLocaleString('id-ID')}`
-                          ) : (
-                            '-'
-                          )}
-                        </td>
-                        <td>
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
-                            {product.condition || 'N/A'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={product.isPublished ? 'admin-dashboard-status-published' : 'admin-dashboard-status-draft'}>
-                            {product.isPublished ? 'Published' : 'Draft'}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <Link 
-                              to={`/admin/products/${product._id}`}
-                              className="admin-dashboard-action-btn edit"
-                            >
-                              <FiEdit2 size={18} />
-                            </Link>
-                            <button 
-                              onClick={() => handleDelete(product._id)}
-                              className="admin-dashboard-action-btn delete"
-                            >
-                              <FiTrash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {filteredProducts.map((product) => {
+              const stock = getProductStock(product);
+              const imageUrl = getProductImage(product);
+              const lowStock = stock <= LOW_STOCK_THRESHOLD;
 
-            {/* Pagination */}
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-          </>
+              return (
+                <article key={product._id} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative aspect-[4/3] bg-slate-100">
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={product.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-slate-400">
+                        <Package size={42} />
+                      </div>
+                    )}
+                    <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                      <span className={`rounded-full px-3 py-1 text-xs font-medium ${product.isPublished ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                        {product.isPublished ? 'Published' : 'Draft'}
+                      </span>
+                      {lowStock && (
+                        <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">
+                          Low stock
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 p-5">
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h2 className="text-lg font-semibold tracking-tight text-slate-900">{product.name}</h2>
+                          <p className="mt-1 text-sm text-slate-500">{product.brand || 'No brand'} · {product.size || 'No size'}</p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-slate-900">{getProductPriceLabel(product)}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Stock</p>
+                        <p className={`mt-1 text-lg font-semibold ${lowStock ? 'text-rose-600' : 'text-slate-900'}`}>{stock}</p>
+                      </div>
+                      <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Condition</p>
+                        <p className="mt-1 text-lg font-semibold text-slate-900">{product.condition || '-'}</p>
+                      </div>
+                    </div>
+
+                    {product.description && (
+                      <p className="line-clamp-3 text-sm leading-6 text-slate-600">
+                        {product.description}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        to={`/admin/products/${product._id}`}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                      >
+                        <Pencil size={16} />
+                        Edit
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(product._id)}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-200 px-4 py-2.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         )}
+
+        <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-3 text-sm text-slate-600">
+            <CheckCircle2 size={18} className="text-emerald-600" />
+            <span>Dashboard now prioritizes visibility for small inventory instead of marketplace-style pagination.</span>
+          </div>
+          <div className="mt-3 flex items-center gap-3 text-sm text-slate-600">
+            <AlertTriangle size={18} className="text-amber-600" />
+            <span>Low stock items are surfaced visually so the admin can act before they run out.</span>
+          </div>
+        </div>
       </div>
     </div>
   );

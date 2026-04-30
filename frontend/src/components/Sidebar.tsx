@@ -1,15 +1,18 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiHome, FiGrid, FiShoppingBag, FiHelpCircle, FiInstagram } from 'react-icons/fi';
+import { FiHome, FiGrid, FiShoppingBag, FiHelpCircle, FiInstagram, FiShield } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAdmin } = useAuth();
 
   const menuItems = [
     { id: 'home', label: 'HOME', icon: <FiHome size={18} />, path: '/' },
     { id: 'all', label: 'ALL', icon: <FiGrid size={18} />, path: '/all' },
     { id: 'collections', label: 'COLLECTIONS', icon: <FiShoppingBag size={18} />, path: '/collections' },
+    ...(isAdmin ? [{ id: 'admin', label: 'ADMIN', icon: <FiShield size={18} />, path: '/admin/dashboard' }] : []),
     { id: 'faqs', label: 'FAQs', icon: <FiHelpCircle size={18} />, path: '#' },
   ];
 

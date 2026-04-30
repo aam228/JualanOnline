@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const Header = ({ onCartClick }: HeaderProps) => {
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -151,14 +151,6 @@ const Header = ({ onCartClick }: HeaderProps) => {
         <div className="header-actions">
           {isAuthenticated && user ? (
             <>
-              {isAdmin && (
-                <button 
-                  className="admin-link-btn"
-                  onClick={() => navigate('/admin/dashboard')}
-                >
-                  Admin Dashboard
-                </button>
-              )}
               <div className="user-menu" ref={userMenuRef}>
                 <button 
                   className="user-menu-btn"

@@ -15,6 +15,20 @@ const ProductDetailPage = () => {
   const [selectedVariants, setSelectedVariants] = useState<{ [key: string]: string }>({});
   const [selectedSKU, setSelectedSKU] = useState<SKU | null>(null);
 
+  const sizeVariant = product?.variantOptions?.find(
+    (variant) => variant.name.toLowerCase() === 'size'
+  );
+  const hasSizeVariants = Boolean(sizeVariant && Array.isArray(sizeVariant.values) && sizeVariant.values.length > 0);
+  const displaySize = selectedVariants['Size']
+    || product?.size
+    || product?.measurements?.Size
+    || product?.measurements?.size
+    || (hasSizeVariants ? sizeVariant?.values[0] : '-');
+  const categoryLabel = typeof product?.category === 'string'
+    ? product.category
+    : product?.category?.name || '';
+  const typeLabel = product?.type || '';
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -145,13 +159,13 @@ const ProductDetailPage = () => {
       return;
     }
 
-    addToCart({
+      addToCart({
       _id: product._id,
       slug: product.slug || product._id || product.name.toLowerCase().replace(/\s+/g, '-'),
       name: product.name,
       price,
       image,
-      category: product.category?.name || '',
+      category: categoryLabel,
       description: typeof product.description === 'object' ? product.description.short : (product.description || ''),
       stock,
       currency: product.currency,
@@ -194,6 +208,8 @@ const ProductDetailPage = () => {
     currentStock = typeof product.stock === 'number' ? product.stock : 0;
   }
   const isAvailable = (selectedSKU && selectedSKU.isActive && currentStock > 0) || (!hasSKU && currentStock > 0);
+  const stockLabel = currentStock > 0 ? `${currentStock} pcs available` : 'Out of stock';
+  const variantSizeOptions = hasSizeVariants ? sizeVariant?.values || [] : [];
 
   return (
     <div className="product-detail-page">
@@ -204,12 +220,12 @@ const ProductDetailPage = () => {
             Home
           </button>
           <FiChevronRight size={14} className="breadcrumb-separator" />
-          {product?.category?.name ? (
+          {categoryLabel ? (
             <button onClick={() => navigate('/')} className="breadcrumb-link">
-              {product.category.name}
+              {categoryLabel}
             </button>
           ) : null}
-          {product?.category?.name && <FiChevronRight size={14} className="breadcrumb-separator" />}
+          {categoryLabel && <FiChevronRight size={14} className="breadcrumb-separator" />}
           <span className="breadcrumb-current">{product?.name || 'Product'}</span>
         </div>
 
@@ -236,11 +252,23 @@ const ProductDetailPage = () => {
           </div>
 
           <div className="product-info-section">
-            {product?.category?.name && (
-              <span className="product-category-badge">{product.category.name}</span>
+            {categoryLabel && (
+              <span className="product-category-badge">{categoryLabel}</span>
             )}
             <h1 className="product-title">{product?.name || 'Product'}</h1>
             <p className="product-brand">{product?.brand || '-'}</p>
+            {typeLabel && <p className="product-brand">{typeLabel}</p>}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, margin: '16px 0 18px' }}>
+              <div style={{ border: '1px solid #E5E7EB', borderRadius: 12, padding: '12px 14px', background: '#FAFAFA' }}>
+                <div style={{ fontSize: 12, color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Size</div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginTop: 4, color: '#111827' }}>{displaySize || '-'}</div>
+              </div>
+              <div style={{ border: '1px solid #E5E7EB', borderRadius: 12, padding: '12px 14px', background: '#FAFAFA' }}>
+                <div style={{ fontSize: 12, color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Stock</div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginTop: 4, color: currentStock > 0 ? '#111827' : '#B91C1C' }}>{stockLabel}</div>
+              </div>
+            </div>
 
             <div className="product-price-section">
               <span className="product-price">{formatPrice(currentPrice)}</span>
@@ -253,35 +281,28 @@ const ProductDetailPage = () => {
 
             <p className="product-brand .include-tax">Tax Include</p>
 
-            {/* Dropdown Size (selalu tampil, jika tidak ada data size, tampilkan satu option placeholder) */}
-            <div style={{ margin: '16px 0', display: 'flex', flexDirection: 'column', }}>
-              <label htmlFor="size-select" style={{ fontWeight: 600, marginRight: 8 }}>Size</label>
-              <select
-                id="size-select"
-                value={selectedVariants['Size'] || ''}
-                onChange={e => handleVariantChange('Size', e.target.value)}
-                style={{ padding: '6px 12px', border: '1px solid #E5E7EB', fontSize: 15, width: 'fit-content', marginTop: "2px" }}
-              >
-                {(() => {
-                  if (
-                    Array.isArray(product?.variantOptions) &&
-                    product.variantOptions.length > 0 &&
-                    product.variantOptions.some(v => v.name.toLowerCase() === 'size')
-                  ) {
-                    const sizeVariant = product.variantOptions.find(v => v.name.toLowerCase() === 'size');
-                    if (sizeVariant && Array.isArray(sizeVariant.values) && sizeVariant.values.length > 0) {
-                      return sizeVariant.values.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                      ));
-                    } else {
-                      return <option value="">Size</option>;
-                    }
-                  } else {
-                    return <option value="">Size</option>;
-                  }
-                })()}
-              </select>
-            </div>
+            {hasSizeVariants ? (
+              <div style={{ margin: '16px 0', display: 'flex', flexDirection: 'column' }}>
+                <label htmlFor="size-select" style={{ fontWeight: 600, marginRight: 8 }}>Size</label>
+                <select
+                  id="size-select"
+                  value={selectedVariants['Size'] || ''}
+                  onChange={(e) => handleVariantChange('Size', e.target.value)}
+                  style={{ padding: '6px 12px', border: '1px solid #E5E7EB', fontSize: 15, width: 'fit-content', marginTop: '2px' }}
+                >
+                  {variantSizeOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div style={{ margin: '16px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontWeight: 600 }}>Size</span>
+                <span style={{ padding: '6px 12px', border: '1px solid #E5E7EB', borderRadius: 999, background: '#FAFAFA', fontSize: 15 }}>
+                  {displaySize || '-'}
+                </span>
+              </div>
+            )}
 
             <div className="product-actions">
               <button
@@ -332,7 +353,7 @@ const ProductDetailPage = () => {
                         name: product.name,
                         price,
                         image,
-                        category: product.category?.name || product.category || '',
+                        category: categoryLabel,
                         description: typeof product.description === 'object' ? product.description.short : (product.description || ''),
                         stock,
                         currency: product.currency,
@@ -350,6 +371,10 @@ const ProductDetailPage = () => {
             {/* Product Specifications */}
             <div className="product-spec-section">
               <ul>
+                <li>SIZE: {displaySize || '-'}</li>
+                <li>STOCK: {currentStock > 0 ? `${currentStock} pcs` : 'Out of stock'}</li>
+                <li>CATEGORY: {categoryLabel || '-'}</li>
+                <li>TYPE: {typeLabel || '-'}</li>
                 <li>YEAR: {product.year || '-'}</li>
                 <li>CONDITION: {product.condition || '-'}</li>
                 <li>DETAILS: {typeof product.description === 'string' ? product.description : (product.description?.short || '-')}</li>

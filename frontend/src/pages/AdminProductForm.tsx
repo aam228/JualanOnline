@@ -1,603 +1,557 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { FiImage, FiPlus, FiX } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../services/api';
-import { FiX, FiPlus, FiTrash2, FiImage } from 'react-icons/fi';
-import './AdminProductForm.css';
 
-interface Product {
-  _id?: string;
-  name: string;
-  brand: string;
-  slug: string;
-  price: string;
-  condition: string;
-  description: string;
-  images: Array<{ url: string; alt: string }>;
-  measurements: Record<string, string>;
-  defects: string[];
-  shipping: {
-    method: string;
-    estimatedDays: string;
-  };
-  tags: string[];
-  isPublished: boolean;
-  variantOptions?: Array<{ name: string; value: string }>;
-  stock?: number;
-  currency?: string;
-  year?: string;
-  category?: string;
+interface ProductImage {
+  url: string;
+  alt: string;
 }
 
-const MEASUREMENT_PRESETS = {
-  'Chest': 'cm',
-  'Length': 'cm',
-  'Sleeve': 'cm',
-  'Waist': 'cm',
-  'Inseam': 'cm',
-  'Shoulder': 'cm',
-  'Size': ''
-};
+interface ProductFormState {
+  name: string;
+  brand: string;
+  category: string;
+  type: string;
+  price: string;
+  size: string;
+  condition: string;
+  stock: string;
+  description: string;
+  images: ProductImage[];
+  isPublished: boolean;
+}
 
-const CONDITIONS = [
+const CONDITION_OPTIONS = [
   { value: 'like-new', label: 'Like New' },
   { value: 'gently-used', label: 'Gently Used' },
   { value: 'used', label: 'Used' },
   { value: 'heavily-used', label: 'Heavily Used' }
 ];
 
-export default function AdminProductForm() {
+const createEmptyImage = (): ProductImage => ({ url: '', alt: '' });
+
+const createInitialState = (): ProductFormState => ({
+  name: '',
+  brand: '',
+  category: '',
+  type: '',
+  price: '',
+  size: '',
+  condition: 'gently-used',
+  stock: '1',
+  description: '',
+  images: [createEmptyImage()],
+  isPublished: false
+});
+
+const normalizeImages = (images: unknown): ProductImage[] => {
+  if (!Array.isArray(images) || images.length === 0) {
+    return [createEmptyImage()];
+  }
+
+  return images.map((image) => {
+    if (typeof image === 'string') {
+      return { url: image, alt: '' };
+    }
+
+    if (image && typeof image === 'object') {
+      const currentImage = image as { url?: unknown; alt?: unknown; preview?: unknown };
+      const url = typeof currentImage.url === 'string'
+        ? currentImage.url
+        : typeof currentImage.preview === 'string'
+          ? currentImage.preview
+          : '';
+      const alt = typeof currentImage.alt === 'string' ? currentImage.alt : '';
+
+      return { url, alt };
+    }
+
+    return createEmptyImage();
+  });
+};
+
+const AdminProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
-  const [loading, setLoading] = useState(!!id);
-  const [product, setProduct] = useState<Product>({
-    name: '',
-    brand: '',
-    slug: '',
-    price: '',
-    condition: 'gently-used',
-    description: '',
-    images: [],
-    measurements: {},
-    defects: [],
-    shipping: { method: 'Indonesian Post', estimatedDays: '3-5' },
-    tags: [],
-    isPublished: false,
-    year: ''
-  });
+  const [loading, setLoading] = useState(Boolean(id));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [product, setProduct] = useState<ProductFormState>(createInitialState());
 
   useEffect(() => {
-    if (id) {
-      fetchProduct();
+    if (!id) {
+      setLoading(false);
+      return;
     }
+
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const response = await fetch(`${API_BASE_URL}/admin/products/${id}`);
+        if (!response.ok) {
+          throw new Error('Product not found');
+        }
+
+        const data = await response.json();
+        setProduct({
+          name: data.name || '',
+          brand: data.brand || '',
+          category: typeof data.category === 'string' ? data.category : data.category?.name || '',
+          type: data.type || '',
+          price: data.price !== undefined && data.price !== null ? String(data.price) : '',
+          size: data.size || data.measurements?.Size || data.measurements?.size || '',
+          condition: data.condition || 'gently-used',
+          stock: String(
+            typeof data.stock === 'number'
+              ? data.stock
+              : Array.isArray(data.skus)
+                ? data.skus.reduce((total: number, sku: { stock?: number }) => total + (typeof sku.stock === 'number' ? sku.stock : 0), 0)
+                : 1
+          ),
+          description: data.description || '',
+          images: normalizeImages(data.images),
+          isPublished: Boolean(data.isPublished)
+        });
+      } catch (fetchError) {
+        console.error('Error fetching product:', fetchError);
+        setError('Failed to load product data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
-  const fetchProduct = async () => {
+  const updateImage = (index: number, field: keyof ProductImage, value: string) => {
+    setProduct((previous) => {
+      const images = [...previous.images];
+      images[index] = { ...images[index], [field]: value };
+      return { ...previous, images };
+    });
+  };
+
+  const addImage = () => {
+    setProduct((previous) => ({
+      ...previous,
+      images: [...previous.images, createEmptyImage()]
+    }));
+  };
+
+  const removeImage = (index: number) => {
+    setProduct((previous) => ({
+      ...previous,
+      images: previous.images.filter((_, imageIndex) => imageIndex !== index)
+    }));
+  };
+
+  const getPriceValue = () => {
+    const priceValue = Number(product.price);
+    return Number.isFinite(priceValue) ? priceValue : 0;
+  };
+
+  const getStockValue = () => {
+    const stockValue = Number(product.stock);
+    return Number.isFinite(stockValue) ? stockValue : 0;
+  };
+
+  const filteredImages = product.images
+    .map((image) => ({
+      url: image.url.trim(),
+      alt: image.alt.trim()
+    }))
+    .filter((image) => image.url.length > 0);
+
+  const validateProduct = () => {
+    if (!product.name.trim()) return 'Product name is required.';
+    if (!product.brand.trim()) return 'Brand is required.';
+    if (!product.category.trim()) return 'Category is required.';
+    if (!product.type.trim()) return 'Type is required.';
+    if (!product.size.trim()) return 'Size is required.';
+    if (!product.description.trim()) return 'Description is required.';
+    if (getPriceValue() <= 0) return 'Price must be greater than zero.';
+    if (getStockValue() < 0) return 'Stock cannot be negative.';
+    if (filteredImages.length === 0) return 'Add at least one product photo.';
+    return '';
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const validationMessage = validateProduct();
+    if (validationMessage) {
+      setError(validationMessage);
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/products/${id}`);
-      const data = await response.json();
-      setProduct(prev => ({
-        ...prev,
-        ...data,
-        year: data.year ?? '',
-        category: data.category ?? '',
-      }));
-    } catch (error) {
-      console.error('Error fetching product:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setSaving(true);
+      setError('');
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-  };
+      const payload = {
+        name: product.name.trim(),
+        brand: product.brand.trim(),
+        category: product.category.trim(),
+        type: product.type.trim(),
+        price: getPriceValue(),
+        size: product.size.trim(),
+        condition: product.condition,
+        stock: getStockValue(),
+        description: product.description.trim(),
+        images: filteredImages,
+        measurements: product.size.trim() ? { Size: product.size.trim() } : {},
+        isPublished: product.isPublished
+      };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    setProduct(prev => ({
-      ...prev,
-      name,
-      slug: generateSlug(name)
-    }));
-  };
+      const response = await fetch(
+        id ? `${API_BASE_URL}/admin/products/${id}` : `${API_BASE_URL}/admin/products`,
+        {
+          method: id ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(payload)
+        }
+      );
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    if (name.startsWith('shipping.')) {
-      const key = name.split('.')[1];
-      setProduct(prev => ({
-        ...prev,
-        shipping: { ...prev.shipping, [key]: value }
-      }));
-    } else {
-      setProduct(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
-  const handleAddImage = () => {
-    setProduct(prev => ({
-      ...prev,
-      images: [...prev.images, { url: '', alt: '' }]
-    }));
-  };
-
-  const handleUpdateImage = (index: number, field: string, value: string) => {
-    const updated = [...product.images];
-    updated[index] = { ...updated[index], [field]: value };
-    setProduct(prev => ({ ...prev, images: updated }));
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setProduct(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleAddMeasurement = (preset: string) => {
-    setProduct(prev => ({
-      ...prev,
-      measurements: { ...prev.measurements, [preset]: '' }
-    }));
-  };
-
-  const handleUpdateMeasurement = (oldKey: string, newKey: string, value: string) => {
-    const updated = { ...product.measurements };
-    if (oldKey !== newKey) {
-      delete updated[oldKey];
-    }
-    updated[newKey] = value;
-    setProduct(prev => ({ ...prev, measurements: updated }));
-  };
-
-  const handleRemoveMeasurement = (key: string) => {
-    const updated = { ...product.measurements };
-    delete updated[key];
-    setProduct(prev => ({ ...prev, measurements: updated }));
-  };
-
-  const handleAddDefect = () => {
-    setProduct(prev => ({
-      ...prev,
-      defects: [...prev.defects, '']
-    }));
-  };
-
-  const handleUpdateDefect = (index: number, value: string) => {
-    const updated = [...product.defects];
-    updated[index] = value;
-    setProduct(prev => ({ ...prev, defects: updated }));
-  };
-
-  const handleRemoveDefect = (index: number) => {
-    setProduct(prev => ({
-      ...prev,
-      defects: prev.defects.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const method = id ? 'PUT' : 'POST';
-      const url = id 
-        ? `${API_BASE_URL}/admin/products/${id}`
-        : `${API_BASE_URL}/admin/products`;
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(product)
-      });
-      
       if (response.status === 401 || response.status === 403) {
-        alert('Unauthorized. Please login again.');
+        setError('Unauthorized. Please login again.');
         navigate('/login');
         return;
       }
-      
-      if (response.ok) {
-        alert(id ? 'Product updated successfully!' : 'Product created successfully!');
-        navigate('/admin/products');
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to save product' }));
+        throw new Error(errorData.error || 'Failed to save product');
       }
-    } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Error saving product');
+
+      navigate('/admin/products');
+    } catch (submitError) {
+      console.error('Error saving product:', submitError);
+      setError(submitError instanceof Error ? submitError.message : 'Failed to save product.');
+    } finally {
+      setSaving(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="admin-product-form-loading">
-        <div className="admin-product-form-loading-text">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm font-medium text-slate-600 shadow-sm">
+          Loading product form...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-product-form">
-      <form onSubmit={handleSubmit} className="admin-product-form-container">
-        {/* Header */}
-        <div className="admin-product-form-header">
-          <h1 className="admin-product-form-title">
-            {id ? 'Edit Product' : 'Add New Product'}
-          </h1>
-          <p className="admin-product-form-desc">Manage your vintage clothing inventory</p>
+    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <Link to="/admin/products" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">
+              Back to products
+            </Link>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+              {id ? 'Edit Product' : 'Add Product'}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Streamlined form for a limited streetwear catalog. Keep the input focused on the fields the store actually needs: core identity, size, condition, stock, photos, and description.
+            </p>
+          </div>
+          <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-sm">
+            Single create and edit flow
+          </div>
         </div>
 
-        <div className="admin-product-form-main">
-          {/* Main Content */}
-          <div>
-            {/* Images Section */}
-            <div className="admin-product-form-card">
-              <h2 className="admin-product-form-section-title">Product Images</h2>
-              <div className="admin-product-form-image-grid">
+        {error && (
+          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
+          </div>
+        )}
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Product Details</h2>
+                  <p className="mt-1 text-sm text-slate-600">Use concise values that are easy to verify in a small catalog.</p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Product Name *</span>
+                  <input
+                    type="text"
+                    value={product.name}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, name: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="Bape Spellout Hoodie"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Brand *</span>
+                  <input
+                    type="text"
+                    value={product.brand}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, brand: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="A Bathing Ape"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Category *</span>
+                  <input
+                    type="text"
+                    value={product.category}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, category: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="Hoodie, Pants, Hat, Tee"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Type *</span>
+                  <input
+                    type="text"
+                    value={product.type}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, type: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="Streetwear, collectible, workwear"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Price (IDR) *</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={product.price}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, price: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="500000"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Size *</span>
+                  <input
+                    type="text"
+                    value={product.size}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, size: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="L, XL, 32, OS, etc."
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Condition</span>
+                  <select
+                    value={product.condition}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, condition: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900"
+                  >
+                    {CONDITION_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">Stock *</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={product.stock}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, stock: event.target.value }))}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                    placeholder="1"
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Photos</h2>
+                  <p className="mt-1 text-sm text-slate-600">Add the photos that are necessary to evaluate the item quickly.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addImage}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                >
+                  <FiPlus size={16} />
+                  Add image
+                </button>
+              </div>
+
+              <div className="space-y-4">
                 {product.images.map((image, index) => (
-                  <div key={index} className="admin-product-form-image-thumb">
-                    {image.url ? (
-                      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                        <img 
-                          src={image.url} 
-                          alt={image.alt || `Product ${index + 1}`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }}
+                  <div key={index} className="grid gap-3 rounded-2xl border border-slate-200 p-4 md:grid-cols-[96px_minmax(0,1fr)]">
+                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                      {image.url ? (
+                        <img src={image.url} alt={image.alt || `Product image ${index + 1}`} className="h-full w-full object-cover" />
+                      ) : (
+                        <FiImage size={28} className="text-slate-400" />
+                      )}
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_auto] md:items-start">
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-medium text-slate-700">Image URL</span>
+                        <input
+                          type="text"
+                          value={image.url}
+                          onChange={(event) => updateImage(index, 'url', event.target.value)}
+                          className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                          placeholder="https://..."
                         />
+                      </label>
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-medium text-slate-700">Alt text</span>
+                        <input
+                          type="text"
+                          value={image.alt}
+                          onChange={(event) => updateImage(index, 'alt', event.target.value)}
+                          className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                          placeholder="Front view"
+                        />
+                      </label>
+                      <div className="pt-7">
                         <button
                           type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="admin-product-form-image-remove"
+                          onClick={() => removeImage(index)}
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                          aria-label="Remove image"
                         >
                           <FiX size={16} />
                         </button>
                       </div>
-                    ) : (
-                      <div style={{ background: '#f3f4f6', borderRadius: 8, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <FiImage style={{ color: '#a1a1aa' }} size={32} />
-                      </div>
-                    )}
-                    <input
-                      type="text"
-                      value={image.url}
-                      onChange={(e) => handleUpdateImage(index, 'url', e.target.value)}
-                      placeholder="Image URL"
-                      style={{ marginTop: 8, width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={handleAddImage}
-                className="admin-product-form-add-image"
-              >
-                <FiPlus size={18} />
-                Add Image
-              </button>
-            </div>
-
-            {/* Basic Info */}
-            <div className="admin-product-form-card">
-              <h2 className="admin-product-form-section-title">Basic Information</h2>
-              <div className="admin-product-form-fields">
-                <div className="admin-product-form-field">
-                  <label className="input-label" htmlFor="product-name">Product Name *</label>
-                  <input
-                    id="product-name"
-                    type="text"
-                    value={product.name}
-                    onChange={handleNameChange}
-                    placeholder="e.g., Bape Spellout Hoodie"
-                    className="input"
-                    required
-                  />
-                </div>
-                <div className="admin-product-form-row">
-                  <div className="admin-product-form-field">
-                    <label className="input-label" htmlFor="product-brand">Brand</label>
-                    <input
-                      id="product-brand"
-                      type="text"
-                      name="brand"
-                      value={product.brand}
-                      onChange={handleInputChange}
-                      placeholder="e.g., A Bathing Ape"
-                      className="input"
-                    />
-                  </div>
-                  <div className="admin-product-form-field">
-                    <label className="input-label" htmlFor="product-category">Category</label>
-                    <input
-                      id="product-category"
-                      type="text"
-                      name="category"
-                      value={product.category || ''}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Fashion, Electronics, etc."
-                      className="input"
-                      required
-                    />
-                  </div>
-                  <div className="admin-product-form-field">
-                    <label className="input-label" htmlFor="product-condition">Condition</label>
-                    <select
-                      id="product-condition"
-                      name="condition"
-                      value={product.condition}
-                      onChange={handleInputChange}
-                      className="input"
-                    >
-                      {CONDITIONS.map(c => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="admin-product-form-field">
-                  <label className="input-label" htmlFor="product-price">Price *</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      id="product-price"
-                      type="text"
-                      name="price"
-                      value={product.price}
-                      onChange={handleInputChange}
-                      placeholder="e.g., 500000"
-                      className="input"
-                      required
-                      style={{ flex: 2 }}
-                    />
-                    <select
-                      id="product-currency"
-                      name="currency"
-                      value={product.currency || 'IDR'}
-                      onChange={handleInputChange}
-                      className="input"
-                      style={{ flex: 1 }}
-                      required
-                    >
-                      <option value="IDR">IDR</option>
-                      <option value="USD">USD</option>
-                      <option value="SGD">SGD</option>
-                      <option value="MYR">MYR</option>
-                      <option value="JPY">JPY</option>
-                      <option value="EUR">EUR</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="admin-product-form-field">
-                  <label className="input-label" htmlFor="product-year">Year</label>
-                  <input
-                    id="product-year"
-                    type="text"
-                    name="year"
-                    value={product.year || ''}
-                    onChange={e => setProduct(prev => ({ ...prev, year: e.target.value }))}
-                    placeholder="e.g., Bebas isi tahun atau teks"
-                    className="input"
-                  />
-                </div>
-                {/* Stock field for non-variant product */}
-                {(!product.variantOptions || product.variantOptions.length === 0) && (
-                  <div className="admin-product-form-field">
-                    <label className="input-label" htmlFor="product-stock">Stock (Qty)</label>
-                    <input
-                      id="product-stock"
-                      type="number"
-                      name="stock"
-                      min={1}
-                      value={product.stock ?? 1}
-                      onChange={e => setProduct(prev => ({ ...prev, stock: Math.max(1, parseInt(e.target.value) || 1) }))}
-                      className="input"
-                      required
-                    />
-                  </div>
-                )}
-                <div className="admin-product-form-field">
-                  <label className="input-label" htmlFor="product-description">Description</label>
-                  <textarea
-                    id="product-description"
-                    name="description"
-                    value={product.description}
-                    onChange={handleInputChange}
-                    placeholder="Describe the product, materials, style, condition details..."
-                    rows={4}
-                    className="input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Measurements */}
-            <div className="admin-product-form-card">
-              <h2 className="admin-product-form-section-title">Measurements</h2>
-              <div className="admin-product-form-measurement-presets">
-                <p className="input-label">Quick add presets:</p>
-                <div className="admin-product-form-measurement-preset-list">
-                  {Object.keys(MEASUREMENT_PRESETS).map(preset => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => !product.measurements[preset] && handleAddMeasurement(preset)}
-                      disabled={product.measurements[preset] !== undefined}
-                      className="admin-product-form-measurement-preset"
-                    >
-                      + {preset}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="admin-product-form-measurement-fields">
-                {Object.entries(product.measurements).map(([key, value], index) => (
-                  <div key={index} className="admin-product-form-measurement-row">
-                    <div className="admin-product-form-field">
-                      <label className="input-label">Type</label>
-                      <input
-                        type="text"
-                        value={key}
-                        onChange={(e) => handleUpdateMeasurement(key, e.target.value, value)}
-                        className="input"
-                      />
                     </div>
-                    <div className="admin-product-form-field">
-                      <label className="input-label">Value</label>
-                      <input
-                        type="text"
-                        value={value}
-                        onChange={(e) => handleUpdateMeasurement(key, key, e.target.value)}
-                        placeholder="e.g., 50cm"
-                        className="input"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMeasurement(key)}
-                      className="admin-dashboard-action-btn delete"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* Defects */}
-            <div className="admin-product-form-card">
-              <h2 className="admin-product-form-section-title">Defects & Issues</h2>
-              <div>
-                {product.defects.map((defect, index) => (
-                  <div key={index} className="admin-product-form-defect-row">
-                    <input
-                      type="text"
-                      value={defect}
-                      onChange={(e) => handleUpdateDefect(index, e.target.value)}
-                      placeholder="e.g., Small stain on sleeve"
-                      className="input"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveDefect(index)}
-                      className="admin-dashboard-action-btn delete"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
-                  </div>
-                ))}
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-slate-900">Description</h2>
+                <p className="mt-1 text-sm text-slate-600">Keep it focused on fit, condition notes, and what makes the item relevant.</p>
               </div>
-              <button
-                type="button"
-                onClick={handleAddDefect}
-                className="admin-product-form-add-image"
-              >
-                <FiPlus size={18} />
-                Add Issue
-              </button>
-            </div>
-
-            {/* Tags */}
-            <div className="admin-product-form-card">
-              <h2 className="admin-product-form-section-title">Tags</h2>
-              <input
-                type="text"
-                value={product.tags.join(', ')}
-                onChange={(e) => setProduct(prev => ({ ...prev, tags: e.target.value.split(',').map(t => t.trim()) }))}
-                placeholder="e.g., vintage, bape, streetwear, grailed"
-                className="admin-product-form-tag-input"
+              <textarea
+                value={product.description}
+                onChange={(event) => setProduct((previous) => ({ ...previous, description: event.target.value }))}
+                rows={6}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+                placeholder="Describe the fit, fabric, flaws, and any notes the buyer should know."
               />
-              <p className="admin-product-form-tag-desc">Separate tags with commas</p>
-            </div>
-          </div>
+            </section>
 
-          {/* Sidebar */}
-          <div>
-            {/* Preview Card */}
-            <div className="admin-product-form-preview-card">
-              <h3 className="admin-product-form-section-title" style={{ fontSize: 18, marginBottom: 16 }}>Preview</h3>
-              <div className="admin-product-form-preview-content">
-                {product.images[0] && (
-                  <div className="admin-product-form-preview-image">
-                    <img 
-                      src={product.images[0].url} 
-                      alt="Preview"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                )}
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h4 className="admin-product-form-title" style={{ fontSize: 18, marginBottom: 4 }}>{product.name || 'Product Name'}</h4>
-                  <p className="input-label" style={{ marginBottom: 0 }}>{product.brand || 'Brand'}</p>
+                  <h2 className="text-lg font-semibold text-slate-900">Publish Status</h2>
+                  <p className="mt-1 text-sm text-slate-600">Draft items stay hidden until you are ready to show them.</p>
                 </div>
-                <div className="admin-product-form-preview-price">
-                  <p className="admin-product-form-title" style={{ fontSize: 22 }}>
-                    Rp {product.price ? parseInt(product.price).toLocaleString('id-ID') : '0'}
-                  </p>
-                  <p className="input-label" style={{ marginTop: 4 }}>
-                    Condition: <span style={{ fontWeight: 500 }}>{CONDITIONS.find(c => c.value === product.condition)?.label}</span>
-                  </p>
-                </div>
-                {product.tags.length > 0 && (
-                  <div className="admin-product-form-tag-list">
-                    {product.tags.map(tag => (
-                      <span key={tag} className="admin-product-form-tag-chip">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            {/* Publish Card */}
-            <div className="admin-product-form-publish-card">
-              <div className="admin-product-form-publish-row">
-                <input
-                  type="checkbox"
-                  name="isPublished"
-                  checked={product.isPublished}
-                  onChange={(e) => setProduct(prev => ({ ...prev, isPublished: e.target.checked }))}
-                  className="admin-product-form-publish-checkbox"
-                />
-                <label className="input-label" style={{ marginBottom: 0 }}>
-                  Publish Product
+                <label className="inline-flex items-center gap-3 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={product.isPublished}
+                    onChange={(event) => setProduct((previous) => ({ ...previous, isPublished: event.target.checked }))}
+                    className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                  />
+                  Publish product
                 </label>
               </div>
-              <div className="admin-product-form-publish-status">
-                {product.isPublished ? '✓ Product will be visible' : '○ Product is in draft'}
-              </div>
-              <div className="admin-product-form-publish-actions">
-                <button
-                  type="submit"
-                  className="admin-product-form-publish-btn"
-                >
-                  {id ? 'Update' : 'Create'} Product
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/admin/products')}
-                  className="admin-product-form-cancel-btn"
-                >
-                  Cancel
-                </button>
+            </section>
+
+            <div className="flex flex-wrap gap-3 pb-2">
+              <button
+                type="button"
+                onClick={() => navigate('/admin/products')}
+                className="rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {saving ? 'Saving...' : id ? 'Update Product' : 'Create Product'}
+              </button>
+            </div>
+          </form>
+
+          <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Preview</h3>
+              <div className="mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+                <div className="aspect-[4/5] bg-slate-100">
+                  {filteredImages[0] ? (
+                    <img
+                      src={filteredImages[0].url}
+                      alt={filteredImages[0].alt || 'Preview image'}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-slate-400">
+                      <FiImage size={40} />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <p className="text-lg font-semibold text-slate-900">{product.name || 'Product name'}</p>
+                    <p className="text-sm text-slate-500">{product.brand || 'Brand'} · {product.size || 'Size'}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs font-medium">
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                      {CONDITION_OPTIONS.find((option) => option.value === product.condition)?.label || 'Condition'}
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                      Stock {product.stock || '0'}
+                    </span>
+                    <span className={`rounded-full px-3 py-1 ${product.isPublished ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                      {product.isPublished ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-semibold tracking-tight text-slate-900">
+                      Rp {getPriceValue().toLocaleString('id-ID')}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">Core product fields only, optimized for a small catalog.</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">What is kept</h3>
+              <ul className="mt-4 space-y-3 text-sm text-slate-600">
+                <li>Product identity: name, brand, category, type, and price.</li>
+                <li>Limited inventory fields: size, stock, condition, and publish state.</li>
+                <li>Photos and description for quick review before publishing.</li>
+              </ul>
+            </div>
+          </aside>
         </div>
-      </form>
+      </div>
     </div>
   );
-}
+};
+
+export default AdminProductForm;

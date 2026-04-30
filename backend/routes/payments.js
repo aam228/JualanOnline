@@ -11,10 +11,180 @@ const {
   constructWebhookEvent,
 } = require('../payments/stripeService');
 const { isPaypalConfigured } = require('../payments/paypalService');
+const { ObjectId } = require('mongodb');
+
+const DEFAULT_CHECKOUT_ORIGIN = 'https://jualan-online.vercel.app';
+
+function createHttpError(message, statusCode = 400) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
+function getRequestBody(req) {
+  return req?.body && typeof req.body === 'object' ? req.body : {};
+}
+
+function getCheckoutOrigin(req) {
+  return (
+    req?.headers?.origin ||
+    req?.headers?.referer?.replace(/\/$/, '') ||
+    process.env.CLIENT_URL ||
+    process.env.FRONTEND_URL ||
+    DEFAULT_CHECKOUT_ORIGIN
+  );
+}
 
 function getFrontendBaseUrl(req) {
-  let frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'https://jualan-online.vercel.app';
-  const origin = req.headers.origin;
+  let frontendBaseUrl = process.env.FRONTEND_BASE_URL || DEFAULT_CHECKOUT_ORIGIN;
+  const origin = req?.headers?.origin;
+  if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+    frontendBaseUrl = origin;
+  }
+  return frontendBaseUrl;
+}
+
+function toFiniteNumber(value) {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function isZeroDecimalCurrency(currency) {
+  return ['bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf'].includes(
+    String(currency || '').toLowerCase()
+  );
+}
+
+function normalizeStripeUnitAmount(value, currency) {
+  const numericValue = toFiniteNumber(value);
+  if (numericValue === null || numericValue <= 0) {
+    return null;
+  }
+
+  if (isZeroDecimalCurrency(currency)) {
+    return Math.round(numericValue);
+  }
+
+  if (!Number.isInteger(numericValue)) {
+    return Math.round(numericValue * 100);
+  }
+
+  return Math.round(numericValue);
+}
+
+function clampQuantity(requestedQuantity, stockQuantity) {
+  const numericRequested = Math.floor(toFiniteNumber(requestedQuantity) || 1);
+  const safeRequested = numericRequested > 0 ? numericRequested : 1;
+  const numericStock = Math.floor(toFiniteNumber(stockQuantity) || 0);
+
+  if (numericStock <= 0) {
+    return 0;
+  }
+
+  return Math.min(safeRequested, numericStock);
+}
+
+async function resolveProductDoc(productsCollection, item) {
+  const queries = [];
+  const itemId = item?._id || item?.id || item?.productId;
+
+  if (item?.slug) {
+    queries.push({ slug: item.slug });
+  }
+
+  if (itemId) {
+    queries.push({ _id: itemId });
+    if (typeof itemId === 'string' && ObjectId.isValid(itemId)) {
+      queries.push({ _id: new ObjectId(itemId) });
+    }
+  }
+
+  for (const query of queries) {
+    const productDoc = await productsCollection.findOne(query);
+    if (productDoc) {
+      return productDoc;
+    }
+  }
+
+  return null;
+}
+
+function buildStripeLineItemName(item, productDoc) {
+  return productDoc?.name || item?.name || item?.slug || item?.productSlug || item?._id || 'Product';
+}
+
+async function buildStripeCheckoutLineItems({ items, currency, shippingCost = 0, productsCollection }) {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw createHttpError('Invalid checkout payload');
+  }
+
+  const normalizedCurrency = String(currency || '').toLowerCase();
+  if (!normalizedCurrency) {
+    throw createHttpError('Invalid checkout payload');
+  }
+
+  const line_items = [];
+
+  for (const item of items) {
+    if (!item || typeof item !== 'object') {
+      throw createHttpError('Invalid checkout payload');
+    }
+
+    const productDoc = await resolveProductDoc(productsCollection, item);
+    const stockSource = toFiniteNumber(productDoc?.stock);
+    const fallbackStock = toFiniteNumber(item.stock);
+    const availableStock = stockSource !== null ? stockSource : fallbackStock;
+
+    if (availableStock !== null && availableStock <= 0) {
+      throw createHttpError(`Product ${buildStripeLineItemName(item, productDoc)} is out of stock`);
+    }
+
+    const quantity = clampQuantity(item.quantity, availableStock);
+    if (!quantity) {
+      throw createHttpError(`Invalid quantity for ${buildStripeLineItemName(item, productDoc)}`);
+    }
+
+    const priceSource = toFiniteNumber(productDoc?.price) ?? toFiniteNumber(item.price) ?? toFiniteNumber(productDoc?.priceRange?.min);
+    const unit_amount = normalizeStripeUnitAmount(priceSource, normalizedCurrency);
+    if (!unit_amount || !Number.isInteger(unit_amount)) {
+      throw createHttpError(`Invalid price for ${buildStripeLineItemName(item, productDoc)}`);
+    }
+
+    line_items.push({
+      price_data: {
+        currency: normalizedCurrency,
+        product_data: {
+          name: buildStripeLineItemName(item, productDoc),
+        },
+        unit_amount,
+      },
+      quantity,
+    });
+  }
+
+  const normalizedShipping = toFiniteNumber(shippingCost);
+  if (normalizedShipping !== null && normalizedShipping > 0) {
+    const shippingUnitAmount = normalizeStripeUnitAmount(normalizedShipping, normalizedCurrency);
+    if (shippingUnitAmount && Number.isInteger(shippingUnitAmount)) {
+      line_items.push({
+        price_data: {
+          currency: normalizedCurrency,
+          product_data: {
+            name: 'Shipping',
+          },
+          unit_amount: shippingUnitAmount,
+        },
+        quantity: 1,
+      });
+    }
+  }
+
+  return line_items;
+}
+
+function getFrontendBaseUrl(req) {
+  let frontendBaseUrl = process.env.FRONTEND_BASE_URL || DEFAULT_CHECKOUT_ORIGIN;
+  const origin = req?.headers?.origin;
   if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
     frontendBaseUrl = origin;
   }
@@ -84,20 +254,20 @@ async function upsertDraftOrder({
 
 // CORS preflight handler for all /payments routes
 router.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Origin', req?.headers?.origin || '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.sendStatus(200);
 });
 
-// Stripe Checkout Session endpoint (legacy path)
-router.post('/create-checkout-session', async (req, res) => {
+async function handleStripeCheckoutSession(req, res) {
   try {
     if (!isStripeConfigured()) {
       return res.status(500).json({ error: 'Stripe not initialized' });
     }
 
+    const body = getRequestBody(req);
     const {
       amount,
       currency = 'usd',
@@ -108,25 +278,53 @@ router.post('/create-checkout-session', async (req, res) => {
       shippingAddress = {},
       shippingRegion = '',
       shippingCost = 0,
-    } = req.body;
+    } = body;
 
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({ error: 'Invalid amount' });
+    const numericAmount = toFiniteNumber(amount);
+    if (numericAmount === null || numericAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
     }
 
-    if (!customerName || !shippingAddress.address1 || !shippingAddress.city || !shippingAddress.country) {
-      return res.status(400).json({ error: 'Incomplete shipping/customer data' });
+    if (!customerName || !shippingAddress?.address1 || !shippingAddress?.city || !shippingAddress?.country) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
+    }
+
+    const currencyValue = String(currency || '').trim();
+    if (!currencyValue) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
     }
 
     const normalizedOrderId = normalizeOrderId(orderId);
+    const origin = getCheckoutOrigin(req);
     const frontendBaseUrl = getFrontendBaseUrl(req);
-    const productSlug = req.body.productSlug || '';
-    const currentUrl = req.body.currentUrl || '';
+    const productSlug = body.productSlug || '';
+    const currentUrl = body.currentUrl || '';
+    const db = getDB();
+    const productsCollection = db.collection('products');
+
+    const line_items = await buildStripeCheckoutLineItems({
+      items,
+      currency: currencyValue,
+      shippingCost,
+      productsCollection,
+    });
+
+    if (!line_items.length) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
+    }
+
+    console.log('Checkout origin:', origin);
+    console.log('Checkout payload:', body);
+    console.log('Line items:', line_items);
 
     await upsertDraftOrder({
       orderId: normalizedOrderId,
-      amount: Number(amount),
-      currency: String(currency).toUpperCase(),
+      amount: numericAmount,
+      currency: currencyValue.toUpperCase(),
       customerEmail,
       customerName,
       items,
@@ -137,8 +335,8 @@ router.post('/create-checkout-session', async (req, res) => {
     });
 
     const session = await createPayment('stripe', {
-      amount: Number(amount),
-      currency: String(currency).toLowerCase(),
+      amount: numericAmount,
+      currency: currencyValue.toLowerCase(),
       customerEmail,
       customerName,
       orderId: normalizedOrderId,
@@ -146,9 +344,11 @@ router.post('/create-checkout-session', async (req, res) => {
       currentUrl,
       productSlug,
       shippingRegion,
+      lineItems: line_items,
+      successUrl: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&provider=stripe`,
+      cancelUrl: `${origin}/checkout`,
     });
 
-    const db = getDB();
     const ordersCollection = db.collection('orders');
     await ordersCollection.updateOne(
       { orderId: normalizedOrderId },
@@ -161,22 +361,25 @@ router.post('/create-checkout-session', async (req, res) => {
       }
     );
 
-    res.json({
+    return res.json({
       id: session.id,
       url: session.url,
       provider: 'stripe',
       orderId: normalizedOrderId,
     });
-  } catch (err) {
-    console.error('Create checkout session error:', err.message);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error('Create checkout session error:', error.message);
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'Failed to create Stripe checkout session',
+    });
   }
-});
+}
+
+// Stripe Checkout Session endpoint (legacy path)
+router.post('/create-checkout-session', handleStripeCheckoutSession);
 
 // Stripe Checkout Session endpoint (new path)
-router.post('/stripe/create-session', async (req, res) => {
-  return router.handle({ ...req, url: '/create-checkout-session', method: 'POST' }, res, () => {});
-});
+router.post('/stripe/create-session', handleStripeCheckoutSession);
 
 // PayPal create order
 router.post('/paypal/create-order', async (req, res) => {
@@ -185,6 +388,7 @@ router.post('/paypal/create-order', async (req, res) => {
       return res.status(500).json({ error: 'PayPal not initialized' });
     }
 
+    const body = getRequestBody(req);
     const {
       amount,
       currency = 'USD',
@@ -196,10 +400,15 @@ router.post('/paypal/create-order', async (req, res) => {
       shippingRegion = '',
       shippingCost = 0,
       currentUrl = '',
-    } = req.body;
+    } = body;
 
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({ error: 'Invalid amount' });
+    const numericAmount = toFiniteNumber(amount);
+    if (numericAmount === null || numericAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
+    }
+
+    if (!customerName || !shippingAddress?.address1 || !shippingAddress?.city || !shippingAddress?.country) {
+      return res.status(400).json({ error: 'Invalid checkout payload' });
     }
 
     const normalizedOrderId = normalizeOrderId(orderId);
@@ -207,7 +416,7 @@ router.post('/paypal/create-order', async (req, res) => {
 
     await upsertDraftOrder({
       orderId: normalizedOrderId,
-      amount: Number(amount),
+      amount: numericAmount,
       currency: String(currency).toUpperCase(),
       customerEmail,
       customerName,
@@ -219,7 +428,7 @@ router.post('/paypal/create-order', async (req, res) => {
     });
 
     const paypalOrder = await createPayment('paypal', {
-      amount: Number(amount),
+      amount: numericAmount,
       currency: String(currency).toUpperCase(),
       customerEmail,
       customerName,
@@ -227,6 +436,13 @@ router.post('/paypal/create-order', async (req, res) => {
       frontendBaseUrl,
       currentUrl,
     });
+
+    if (!paypalOrder?.id) {
+      return res.status(502).json({
+        error: 'PayPal order creation returned an invalid response',
+        message: 'Failed to create PayPal order',
+      });
+    }
 
     const db = getDB();
     const ordersCollection = db.collection('orders');
@@ -253,7 +469,7 @@ router.post('/paypal/create-order', async (req, res) => {
     });
   } catch (error) {
     console.error('PayPal create order error:', error.message);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       error: error.message || 'Failed to create PayPal order',
       message: 'Failed to create PayPal order',
     });
@@ -267,7 +483,7 @@ router.post('/paypal/capture-order', async (req, res) => {
       return res.status(500).json({ error: 'PayPal not initialized' });
     }
 
-    const { orderID, paypalOrderId, orderId } = req.body;
+    const { orderID, paypalOrderId, orderId } = getRequestBody(req);
     const targetPaypalOrderId = orderID || paypalOrderId;
 
     if (!targetPaypalOrderId) {
@@ -561,7 +777,7 @@ router.get('/session/:sessionId', async (req, res) => {
 
 // Stripe Webhook
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
+  const sig = req?.headers?.['stripe-signature'];
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!isStripeConfigured()) {

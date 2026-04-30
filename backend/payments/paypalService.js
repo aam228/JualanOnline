@@ -17,6 +17,15 @@ function isPaypalConfigured() {
   return Boolean(cfg.clientId && cfg.clientSecret);
 }
 
+function getSafeFrontendBaseUrl(orderData = {}) {
+  return (
+    orderData.frontendBaseUrl ||
+    process.env.CLIENT_URL ||
+    process.env.FRONTEND_URL ||
+    'https://jualan-online.vercel.app'
+  );
+}
+
 async function getAccessToken() {
   const cfg = getPaypalConfig();
   if (!cfg.clientId || !cfg.clientSecret) {
@@ -44,6 +53,12 @@ async function createPaypalOrder(orderData) {
 
   const amount = Number(orderData.amount || 0);
   const currency = String(orderData.currency || 'USD').toUpperCase();
+  const orderId = orderData.orderId || `ORDER-${Date.now()}`;
+  const frontendBaseUrl = getSafeFrontendBaseUrl(orderData);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Invalid checkout payload');
+  }
 
   const response = await axios.post(
     `${cfg.baseURL}/v2/checkout/orders`,
@@ -51,12 +66,12 @@ async function createPaypalOrder(orderData) {
       intent: 'CAPTURE',
       purchase_units: [
         {
-          reference_id: orderData.orderId,
+          reference_id: orderId,
           amount: {
             currency_code: currency,
             value: amount.toFixed(2),
           },
-          description: `Order #${orderData.orderId}`,
+          description: `Order #${orderId}`,
         },
       ],
       payer: {
@@ -68,8 +83,8 @@ async function createPaypalOrder(orderData) {
       application_context: {
         brand_name: 'Jualan Online',
         user_action: 'PAY_NOW',
-        return_url: `${orderData.frontendBaseUrl}/payment-success?provider=paypal`,
-        cancel_url: orderData.currentUrl || `${orderData.frontendBaseUrl}/checkout`,
+        return_url: `${frontendBaseUrl}/payment-success?provider=paypal`,
+        cancel_url: orderData.currentUrl || `${frontendBaseUrl}/checkout`,
       },
     },
     {

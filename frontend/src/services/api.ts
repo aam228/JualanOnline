@@ -64,7 +64,9 @@ export interface Product {
   slug: string;
   name: string;
   brand: string;
-  category: ProductCategory;
+  size?: string;
+  category?: ProductCategory | string;
+  type?: string;
   description: ProductDescription;
   images: ProductImage[];
   priceRange: PriceRange;

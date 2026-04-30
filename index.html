@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="id">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ebook digital produk playbook</title>
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--primary: #2563EB;
+			--accent: #38BDF8;
+			--accent-warm: #6366F1;
+			--accent-teal: #22D3EE;
+			--cta: #F59E0B;
+			--amber: var(--primary);
+			--amber-soft: var(--accent-teal);
+			--amber-cta: var(--cta);
+			--amber-cta-mid: var(--cta);
+			--amber-cta-end: var(--cta);
+			--bg: #0F172A;
+			--text: #F8FAFC;
+			--text-2: rgba(203, 213, 245, 0.82);
+			--text-3: rgba(203, 213, 245, 0.62);
+			--text-4: rgba(203, 213, 245, 0.4);
+			--glass-bg: rgba(30, 41, 59, 0.55);
+			--glass-solid: rgba(30, 41, 59, 0.78);
+			--glass-border: rgba(203, 213, 245, 0.14);
+			--glass-border-amber: rgba(99, 102, 241, 0.26);
+			--blur: blur(32px) saturate(160%);
+			--shadow-sm: 0 8px 24px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.18);
+			--shadow-md: 0 14px 42px rgba(0,0,0,0.38), 0 4px 14px rgba(0,0,0,0.22);
+			--divider: rgba(203, 213, 245, 0.12);
+			--font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+			--font-display: "Montserrat", var(--font);
+		}
+
+		*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+		body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; overflow-x: hidden; }
+		a, a:link, a:visited, a:hover, a:focus, a:active { text-decoration: none !important; }
+
+		.wallpaper {
+			position: fixed;
+			inset: 0;
+			z-index: 0;
+			pointer-events: none;
+			background:
+				radial-gradient(ellipse 130% 90% at 20% 0%, rgba(56,189,248,0.14) 0%, transparent 50%),
+				radial-gradient(ellipse 100% 70% at 85% 10%, rgba(99,102,241,0.12) 0%, transparent 45%),
+				radial-gradient(ellipse 100% 65% at 50% 100%, rgba(34,211,238,0.08) 0%, transparent 50%),
+				linear-gradient(180deg, #0F172A 0%, #0F172A 18%, #1E293B 50%, #0F172A 78%, #0F172A 100%);
+		}
+		.wallpaper::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			background:
+				radial-gradient(circle at 30% 18%, rgba(34,211,238,0.06) 0%, transparent 38%),
+				radial-gradient(circle at 70% 75%, rgba(99,102,241,0.04) 0%, transparent 35%);
+		}
+
+		/* ── Layout ── */
+		.page { position: relative; z-index: 1; max-width: 688px; margin: 0 auto; width: 100%; }
+		.container { width: 100%; padding: 0 16px; }
+		.glass { background: var(--glass-bg); backdrop-filter: var(--blur); border: 0.5px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow-sm); }
+		.glass-solid { background: var(--glass-solid); backdrop-filter: var(--blur); border: 0.5px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow-sm); }
+		.section { padding: 32px 0; }
+		.section-first { padding-top: 20px; }
+		.divider { height: 0.5px; background: var(--divider); margin: 0 16px; }
+
+		/* ── Typography — mobile-first ── */
+		.section-label { display: block; margin-bottom: 12px; color: #fff; text-transform: uppercase; letter-spacing: 1.8px; font-size: 11px; font-weight: 700; }
+		.h2 { margin-bottom: 16px; font-family: var(--font-display); font-size: 22px; line-height: 1.3; letter-spacing: -0.02em; word-break: normal; overflow-wrap: break-word; text-wrap: balance; }
+		.desc { max-width: 100%; margin-bottom: 32px; color: var(--text-2); font-size: 14px; line-height: 1.8; }
+		.desc-cta {
+			display: inline-flex; align-items: center; gap: 8px;
+			margin-top: 20px; margin-bottom: 0;
+			padding: 12px 16px;
+			border: 0.5px solid rgba(56,189,248,0.2); border-radius: 12px;
+			background: rgba(56,189,248,0.08);
+			color: var(--amber-soft) !important;
+			font-size: 14px; font-weight: 700; line-height: 1.5;
+			transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+		}
+		.desc-cta:hover { transform: translateY(-1px); border-color: rgba(56,189,248,0.34); background: rgba(56,189,248,0.12); color: var(--text) !important; }
+
+		/* ── Animations ── */
+		.anim { animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+		.d1{animation-delay:.04s} .d2{animation-delay:.1s} .d3{animation-delay:.16s}
+		.d4{animation-delay:.22s} .d5{animation-delay:.28s} .d6{animation-delay:.34s}
+		.d7{animation-delay:.4s}  .d8{animation-delay:.46s}
+		@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+		@keyframes softGlow { 0%,100%{box-shadow:0 8px 24px rgba(245,158,11,0.22)} 50%{box-shadow:0 12px 34px rgba(245,158,11,0.34)} }
+
+		/* ── Hero — mobile-first ── */
+		.hero { padding: 48px 0 36px; text-align: center; }
+		.badge {
+			display: inline-block; margin-bottom: 24px;
+			padding: 8px 16px; border: 0.5px solid var(--glass-border-amber); border-radius: 100px;
+			background: rgba(255,255,255,0.07); color: var(--cta);
+			text-transform: uppercase; letter-spacing: 1.2px; font-size: 10px; font-weight: 700;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+		}
+		.hero-title { margin-bottom: 18px; font-family: var(--font-display); font-size: 28px; line-height: 1.18; letter-spacing: -0.025em; }
+		.hero-sub { max-width: 100%; margin: 0 auto 28px; color: var(--text-2); font-size: 14px; line-height: 1.8; padding: 12px 14px; }
+
+		/* ── Stat row — mobile-first: single row ── */
+		.stat-row { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 10px; margin: 24px auto 0; }
+		.stat-item {
+			flex: 1 1 0;
+			width: auto;
+			min-width: 0;
+			min-height: auto;
+			padding: 16px 10px;
+			text-align: center;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+		.stat-item-label-only .stat-label { color: #dbdbdb; margin-top: 0; font-size: 13px; line-height: 1.5; }
+		.stat-icon { display: block; margin-bottom: 8px; font-size: 20px; line-height: 1; }
+		.stat-num { display: block; color: var(--amber); font-size: 26px; font-weight: 800; letter-spacing: -0.03em; }
+		.stat-label { display: block; margin-top: 4px; color: var(--text-3); font-size: 12px; font-weight: 600; line-height: 1.35; white-space: normal; }
+
+		/* ── Lists ── */
+		.problem-list, .offer-stack { display: flex; flex-direction: column; gap: 10px; }
+		.problem-item, .offer-item { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+		.problem-item { color: var(--text-2); font-size: 14px; line-height: 1.65; }
+		.problem-item:hover, .offer-item:hover { border-color: rgba(99,102,241,0.34) !important; box-shadow: 0 8px 24px rgba(99,102,241,0.12), 0 2px 8px rgba(0,0,0,0.18); transform: translateY(-1px); }
+		.icon-emoji { flex-shrink: 0; margin-top: 1px; font-size: 20px; }
+		.offer-icon { display: flex; align-items: center; justify-content: center; width: 44px; min-width: 44px; height: 44px; border: 0.5px solid rgba(56,189,248,0.18); border-radius: 12px; background: rgba(56,189,248,0.12); font-size: 20px; }
+		.offer-icon-green { background: rgba(34,197,94,0.12) !important; border-color: rgba(34,197,94,0.18) !important; }
+		.offer-icon-purple { background: rgba(99,102,241,0.12) !important; border-color: rgba(99,102,241,0.18) !important; }
+		.offer-icon-blue { background: rgba(37,99,235,0.12) !important; border-color: rgba(37,99,235,0.18) !important; }
+		.offer-icon-red { background: rgba(248,113,113,0.12) !important; border-color: rgba(248,113,113,0.18) !important; }
+		.offer-icon-wa { background: rgba(37,211,102,0.12) !important; border-color: rgba(37,211,102,0.18) !important; }
+		.offer-content { flex: 1; }
+		.offer-title { margin-bottom: 3px; font-size: 14px; font-weight: 700; }
+		.offer-desc { color: var(--text-2); font-size: 13px; line-height: 1.65; }
+		.offer-tag { margin-top: 4px; padding: 4px 10px; border: 0.5px solid rgba(56,189,248,0.18); border-radius: 6px; background: rgba(56,189,248,0.12); color: var(--amber-soft); font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+		/* ── Bundle — mobile-first ── */
+		.bundle-head { text-align: center; margin-bottom: 18px; }
+		.bundle-badge {
+			display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+			padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(245,158,11,0.38);
+			background: rgba(15,23,42,0.55); color: var(--cta);
+			text-transform: uppercase; letter-spacing: 1.2px; font-size: 11px; font-weight: 800;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+		}
+		.bundle-title { margin-top: 14px; font-family: var(--font-display); font-size: 26px; line-height: 1.18; letter-spacing: -0.03em; }
+		.bundle-title-accent { color: var(--cta); }
+		.bundle-sub { max-width: 100%; margin: 12px auto 0; color: var(--text-2); font-size: 14px; line-height: 1.7; }
+		.bundle-sub-underline { color: var(--text); text-decoration: underline; text-decoration-thickness: 4px; text-decoration-color: rgba(245,158,11,0.9); text-underline-offset: 6px; font-weight: 800; white-space: nowrap; display: inline-block; }
+		.bundle-card { margin-top: 20px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(203,213,245,0.16); background: linear-gradient(180deg,rgba(30,41,59,0.86) 0%,rgba(15,23,42,0.62) 100%); box-shadow: var(--shadow-md); }
+
+		/* ===== FIX RESPONSIVE BUNDLE ===== */
+
+		/* base (mobile first) */
+		.bundle-row {
+			display: grid;
+			grid-template-columns: 44px 1fr auto;
+			grid-template-areas:
+				"icon title include"
+				"icon desc desc";
+			gap: 10px 12px;
+			padding: 14px;
+			align-items: flex-start;
+		}
+		.bundle-row + .bundle-row { border-top: 1px solid rgba(203,213,245,0.12); }
+		.bundle-icon-wrap { grid-area: icon; width: 44px; min-width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 14px; border: 1px solid rgba(56,189,248,0.22); background: linear-gradient(135deg,rgba(56,189,248,0.16) 0%,rgba(99,102,241,0.12) 60%,rgba(34,211,238,0.14) 100%); box-shadow: 0 10px 26px rgba(0,0,0,0.26); font-size: 18px; line-height: 1; align-self: center; }
+		.bundle-row-content { display: contents; }
+		.bundle-row-title { grid-area: title; min-width: 0; margin-bottom: 0; font-size: 14px; line-height: 1.4; font-weight: 800; letter-spacing: -0.01em; align-self: start; }
+		.bundle-row-desc { grid-area: desc; min-width: 0; color: var(--text-2); font-size: 12px; line-height: 1.6; align-self: center; }
+		.bundle-row iframe {
+			grid-column: 1 / -1;
+			width: 100%;
+			height: auto;
+			aspect-ratio: 16 / 9;
+			display: block;
+			border: 0;
+			border-radius: 12px;
+			margin-top: 12px;
+		}
+		.bundle-include { grid-area: include; width: fit-content; display: inline-flex; align-items: center; gap: 8px; font-size: 10px; padding: 6px 10px; margin-top: 0; border-radius: 999px; border: 1px solid rgba(245,158,11,0.52); background: rgba(15,23,42,0.5); color: var(--cta); font-weight: 900; letter-spacing: 0.8px; flex-shrink: 0; box-shadow: 0 10px 26px rgba(0,0,0,0.24); justify-self: end; align-self: start; }
+		.bundle-include-check { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--cta); color: #0F172A; font-size: 13px; line-height: 1; box-shadow: 0 10px 22px rgba(245,158,11,0.25); }
+
+		/* ── CTA button ── */
+		.cta-btn {
+			display: inline-block; padding: 15px 32px; border-radius: 14px;
+			background: linear-gradient(135deg, var(--amber-cta) 0%, var(--amber-cta-mid) 60%, var(--amber-cta-end) 100%);
+			color: #fff !important; font-size: 16px; font-weight: 700; letter-spacing: 0.2px;
+			box-shadow: 0 8px 24px rgba(245,158,11,0.26);
+			transition: all 0.2s ease;
+			animation: softGlow 2.5s ease-in-out infinite;
+		}
+		.cta-btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+		.cta-price-old { opacity: 0.74; text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: rgba(255,255,255,0.7); font-weight: 600; font-size: 11px; }
+		.cta-price-new { color: #fff; font-weight: 800; font-size: 15px; }
+		.cta-price-stack { display: inline-flex; flex-direction: column; align-items: flex-start; margin-left: 4px; line-height: 1.1; vertical-align: middle; }
+		.price-old { color: var(--text-3); text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: rgba(203,213,245,0.46); }
+		.price-new { color: var(--cta); font-weight: 800; }
+
+		/* ── Image ── */
+		.img-wrap { width: 100%; max-width: 100%; margin: 0 auto; border-radius: 12px; overflow: hidden; }
+		.img-wrap img { display: block; width: 100%; height: auto; object-fit: cover; }
+
+		/* ── For-grid: single column on mobile ── */
+		.for-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
+
+		/* ── Scroll Popup ── */
+		.scroll-popup {
+			position: fixed;
+			inset: 0;
+			z-index: 999;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.24s ease;
+		}
+		.scroll-popup.is-open {
+			opacity: 1;
+			pointer-events: auto;
+		}
+		.scroll-popup-backdrop {
+			position: absolute;
+			inset: 0;
+			background: rgba(8, 12, 24, 0.58);
+			backdrop-filter: blur(8px) saturate(120%);
+			-webkit-backdrop-filter: blur(8px) saturate(120%);
+		}
+		.scroll-popup-card {
+			position: relative;
+			z-index: 1;
+			width: 100%;
+			max-width: 360px;
+			padding: 20px 18px;
+			border-radius: 16px;
+			border: 1px solid rgba(245,158,11,0.32);
+			background: linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.94) 100%);
+			box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+			text-align: center;
+			transform: translateY(12px) scale(0.98);
+			transition: transform 0.24s ease;
+		}
+		.scroll-popup.is-open .scroll-popup-card {
+			transform: translateY(0) scale(1);
+		}
+		.scroll-popup-close {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			width: 30px;
+			height: 30px;
+			border: 1px solid rgba(203,213,245,0.22);
+			border-radius: 999px;
+			background: rgba(255,255,255,0.05);
+			color: var(--text);
+			font-size: 17px;
+			line-height: 1;
+			cursor: pointer;
+		}
+		.scroll-popup-eyebrow {
+			display: inline-block;
+			margin-bottom: 10px;
+			padding: 5px 10px;
+			border-radius: 999px;
+			border: 1px solid rgba(56,189,248,0.28);
+			background: rgba(56,189,248,0.12);
+			font-size: 10px;
+			font-weight: 700;
+			letter-spacing: 0.8px;
+			text-transform: uppercase;
+			color: var(--amber-soft);
+		}
+		.scroll-popup-title {
+			font-family: var(--font-display);
+			font-size: 22px;
+			line-height: 1.2;
+			letter-spacing: -0.02em;
+			margin-bottom: 8px;
+		}
+		.scroll-popup-desc {
+			font-size: 13px;
+			line-height: 1.65;
+			color: var(--text-2);
+			margin-bottom: 14px;
+		}
+		.scroll-popup-price {
+			margin-bottom: 16px;
+		}
+		.scroll-popup-voucher {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			margin-bottom: 12px;
+			padding: 10px 10px 10px 12px;
+			border: 1px dashed rgba(56,189,248,0.36);
+			border-radius: 12px;
+			background: rgba(56,189,248,0.08);
+		}
+		.scroll-popup-voucher-code {
+			font-size: 14px;
+			line-height: 1;
+			font-weight: 800;
+			letter-spacing: 0.08em;
+			color: #fff;
+		}
+		.scroll-popup-copy-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			padding: 8px 10px;
+			border: 1px solid rgba(203,213,245,0.28);
+			border-radius: 10px;
+			background: rgba(15,23,42,0.72);
+			color: var(--text);
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			cursor: pointer;
+		}
+		.scroll-popup-copy-btn:hover {
+			border-color: rgba(56,189,248,0.48);
+			background: rgba(56,189,248,0.14);
+		}
+		.scroll-popup-copy-icon {
+			font-size: 14px;
+			line-height: 1;
+		}
+		.scroll-popup-copy-note {
+			min-height: 18px;
+			margin-bottom: 12px;
+			font-size: 11px;
+			line-height: 1.4;
+			color: var(--text-3);
+		}
+		.scroll-popup-price-old {
+			display: block;
+			font-size: 13px;
+			color: var(--text-3);
+			text-decoration: line-through;
+			text-decoration-thickness: 2px;
+			text-decoration-color: rgba(203,213,245,0.48);
+		}
+		.scroll-popup-price-new {
+			display: block;
+			margin-top: 2px;
+			font-size: 30px;
+			line-height: 1;
+			font-weight: 800;
+			color: var(--cta);
+			letter-spacing: -0.03em;
+		}
+		.scroll-popup-cta {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			padding: 12px 14px;
+			border-radius: 12px;
+			font-size: 14px;
+			font-weight: 800;
+			background: linear-gradient(135deg, var(--amber-cta) 0%, var(--amber-cta-mid) 60%, var(--amber-cta-end) 100%);
+			color: #fff !important;
+			box-shadow: 0 8px 24px rgba(245,158,11,0.28);
+		}
+
+		/* ── Desktop enhancements ── */
+		@media (min-width: 480px) {
+			.container { padding: 0 20px; }
+			.divider { margin: 0 20px; }
+			.hero { padding: 56px 0 44px; }
+			.hero-title { font-size: 36px; }
+			.hero-sub { font-size: 15px; max-width: 440px; }
+			.badge { font-size: 11px; }
+			.stat-row { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 12px; }
+			.stat-item { flex: 1 1 140px; max-width: 160px; min-height: 110px; padding: 16px 16px; }
+			.h2 { font-size: 26px; }
+			.bundle-title { font-size: 30px; }
+
+			/* tablet */
+			.bundle-row {
+				grid-template-columns: 48px 1fr auto;
+				grid-template-areas:
+					"icon title include"
+					"icon desc desc";
+				align-items: flex-start;
+			}
+			.bundle-icon-wrap {
+				width: 48px;
+				height: 48px;
+				font-size: 20px;
+			}
+			.bundle-include {
+				margin-top: 0;
+			}
+			.for-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+		}
+
+		@media (min-width: 640px) {
+			.container { padding: 0 24px; }
+			.divider { margin: 0 24px; }
+			.hero { padding: 72px 0 56px; }
+			.hero-title { font-size: 46px; }
+			.hero-sub { font-size: 17px; max-width: 463px; }
+			.stat-item { max-width: 148px; min-height: 118px; }
+			.stat-num { font-size: 30px; }
+			.h2 { font-size: 32px; }
+			.desc { font-size: 15px; }
+			.bundle-title { font-size: clamp(30px, 5.8vw, 44px); }
+
+			/* desktop */
+			.bundle-row {
+				grid-template-columns: 56px 1fr auto;
+				padding: 16px 18px;
+				gap: 16px;
+			}
+			.bundle-row-title { font-size: 16px; }
+			.bundle-row-desc { font-size: 13px; }
+			.bundle-icon-wrap { width: 56px; min-width: 56px; height: 56px; font-size: 22px; }
+			.bundle-include {
+				font-size: 11px;
+				padding: 8px 12px;
+			}
+			.bundle-card { border-radius: 22px; }
+			.offer-title { font-size: 15px; }
+			.cta-btn { font-size: 17px; padding: 16px 44px; }
+			.img-wrap { border-radius: 14px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="wallpaper"></div>
+	<div class="page">
+
+		<section class="hero anim d1">
+			<div class="container">
+				<div class="badge">TEMPLATE PERHITUNGAN + VIDEO TUTORIAL + REKOMENDASI STRATEGI</div>
+				<h1 class="hero-title">Pakai dan pelajari perhitungan ini, agar bisnis lo gak salah arah!</h1>
+				<p class="hero-sub glass">Buat lo yang baca pesan ini, selamat!! <br> Artinya lo, dan usaha lo, sama sama mau berkembang!!</p>
+				<div class="stat-row">
+					<div class="stat-item stat-item-label-only glass"><span class="stat-icon" aria-hidden="true">🧮</span><span class="stat-label">Dilengkapi Penjelasan Rumus</span></div>
+					<div class="stat-item stat-item-label-only glass"><span class="stat-icon" aria-hidden="true">⚙️</span><span class="stat-label">Fleksibel dan Mudah disesuaikan</span></div>
+					<div class="stat-item stat-item-label-only glass"><span class="stat-icon" aria-hidden="true">🎁</span><span class="stat-label">Bonus Video Eksklusif</span></div>
+				</div>
+			</div>
+		</section>
+
+		<div class="divider" style="margin-bottom:2px;"></div>
+
+		<div class="section" style="padding-top:0;padding-bottom:0;padding-inline:16px;">
+			<div class="img-wrap">
+				<img src="https://i.ibb.co.com/DfyqL1YF/produk.webp" alt="preview produk">
+			</div>
+		</div>
+
+		<section class="section anim d3">
+			<div class="container">
+				<h2 class="h2">Gua udah pake untuk monitoring 9 toko yang tersebar di 8 kota besar se-Indonesia</h2>
+				<div class="glass" style="padding:20px;">
+					<p class="desc" style="margin-bottom:0;">
+						Sering banget usaha kelihatannya "baik-baik aja"<br>
+						Padahal, ada hal-hal kecil yang meggerogoti usaha lo!<br>
+						Emang gak langsung kerasa, tapi lama-lama kena juga.. 😅<br>
+						Mau sampai kapan terus ngandelin feeling buat bikin keputusan…?<br>
+						atau mulai bergerak pakai data biar lebih jelas arahnya? 🤔
+					</p>
+				</div>
+				<span class="desc-cta">Yuk, mulai kontrol bisnismu sekarang, jangan nunggu terlambat! 🚀</span>
+			</div>
+		</section>
+
+		<section class="section anim d4" style="padding-top: 0;">
+			<div class="container">
+				<div class="glass-solid" style="gap:18px; align-items:center;">
+					<div class="img-wrap">
+						<img src="https://i.ibb.co.com/7dRC4qjf/kasih-solusi.jpg" alt="Imam Choirul Roziqin">
+					</div>
+					<div style="padding:18px;">
+						<p style="font-size:15px;font-weight:700;margin-bottom:4px;">Imam Choirul Roziqin</p>
+						<p style="font-size:13px;color:var(--text-2);line-height:1.65;">Founder & CEO Topscore. Melalui kontennya, ia membagikan pelajaran nyata dari kegagalan bisnis, pengalaman membangun usaha, serta insight praktis seputar dunia entrepreneurship. Latar belakang pendidikannya di bidang Strategic Management (MSM FEB UI) turut memperkuat pendekatannya yang terstruktur dalam berbagi pengetahuan dan membuka peluang diskusi bisnis.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section anim d5">
+			<div class="container">
+				<div class="bundle-head">
+					<div class="bundle-badge">🔥 BUNDLE ALL-IN 🔥</div>
+					<h2 class="bundle-title">Semua yang kamu butuhkan<br><span class="bundle-title-accent">dalam satu paket lengkap!</span></h2>
+					<p class="bundle-sub">Tanpa ribet, tanpa kurang. Hemat waktu, <span class="bundle-sub-underline">langsung jalan.</span></p>
+				</div>
+
+				<div class="bundle-card">
+					<div class="bundle-row">
+						<div class="bundle-icon-wrap" aria-hidden="true">🧮</div>
+						<div class="bundle-row-content">
+							<div class="bundle-row-title">Template Perhitungan</div>
+							<div class="bundle-row-desc">Template siap pakai untuk membantu melakukan perhitungan secara sistematis, rapi, dan mudah digunakan tanpa perlu mulai dari nol.</div>
+						</div>
+						<div class="bundle-include"><span class="bundle-include-check" aria-hidden="true">✓</span>INCLUDE</div>
+					</div>
+
+					<div class="bundle-row">
+						<div class="bundle-icon-wrap" aria-hidden="true">📐</div>
+						<div class="bundle-row-content">
+							<div class="bundle-row-title">Penjelasan Rumus-rumus</div>
+							<div class="bundle-row-desc">Pembahasan lengkap setiap rumus yang digunakan agar kamu paham konsepnya, bukan sekadar memakai tanpa mengerti.</div>
+						</div>
+						<div class="bundle-include"><span class="bundle-include-check" aria-hidden="true">✓</span>INCLUDE</div>
+					</div>
+
+					<div class="bundle-row">
+						<div class="bundle-icon-wrap" aria-hidden="true">🎥</div>
+						<div class="bundle-row-content">
+							<div class="bundle-row-title">Video Tutorial cara menggunakan templatenya</div>
+							<div class="bundle-row-desc">Panduan langkah demi langkah untuk menggunakan template dengan benar agar hasil perhitungan sesuai dan optimal.</div>
+						</div>
+						<div class="bundle-include"><span class="bundle-include-check" aria-hidden="true">✓</span>INCLUDE</div>
+					</div>
+
+					<div class="bundle-row">
+						<div class="bundle-icon-wrap" aria-hidden="true">📈</div>
+						<div class="bundle-row-content">
+							<div class="bundle-row-title">Video Tutorial cara membaca datanya</div>
+							<div class="bundle-row-desc">Penjelasan cara memahami dan menginterpretasikan data hasil perhitungan agar bisa digunakan untuk pengambilan keputusan.</div>
+						</div>
+						<div class="bundle-include"><span class="bundle-include-check" aria-hidden="true">✓</span>INCLUDE</div>
+					</div>
+
+					<div class="bundle-row">
+						<div class="bundle-icon-wrap" aria-hidden="true">♟️</div>
+						<div class="bundle-row-content">
+							<div class="bundle-row-title">+ Bonus Video Penjelasan Strategi (ini yang ga semua orang bisa)</div>
+							<div class="bundle-row-desc">Insight tambahan tentang strategi yang jarang dibahas, membantu kamu memahami langkah lanjutan yang tidak semua orang tahu.</div>
+							<iframe
+								width="100%"
+								height="315"
+								src="https://www.youtube-nocookie.com/embed/6CPfMs0DU3E?playsinline=1&rel=0"
+								title="YouTube video player"
+								frameborder="0"
+								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+								referrerpolicy="no-referrer-when-downgrade"
+								allowfullscreen>
+							</iframe>
+						</div>
+						<div class="bundle-include"><span class="bundle-include-check" aria-hidden="true">✓</span>INCLUDE</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section anim d6">
+			<div class="container">
+				<h2 class="h2">Akses seluruh materi ini dengan harga yang jelas dan transparan.</h2>
+
+				<div class="glass-solid" style="padding:12px 18px; overflow:hidden;">
+					<table style="width:100%;border-collapse:collapse;margin:0;">
+						<tr style="border-bottom:0.5px solid rgba(255,255,255,0.08);">
+							<td style="padding:12px 0;font-size:13px;color:var(--text-2);">Produk</td>
+							<td style="padding:12px 0;font-size:13px;text-align:right;font-weight:700;color:var(--text);">Template perhitungan + Video tutorial + Rekomendasi strategi</td>
+						</tr>
+						<tr style="border-bottom:0.5px solid rgba(255,255,255,0.08);">
+							<td style="padding:12px 0;font-size:13px;color:var(--text-2);">Pembayaran</td>
+							<td style="padding:12px 0;font-size:13px;text-align:right;font-weight:700;color:var(--text);">QRIS, Transfer, E-Wallet</td>
+						</tr>
+						<tr>
+							<td style="padding:12px 0;font-size:13px;font-weight:700;color:var(--text);">Harga</td>
+							<td style="padding:12px 0;font-size:13px;text-align:right;">
+								<span class="price-old" style="font-size:12px;font-weight:700;display:block;">Rp 199.000</span>
+								<span class="price-new" style="font-size:15px;display:block;">Rp 139.000</span>
+							</td>
+						</tr>
+					</table>
+				</div>
+
+				<div style="height:24px;"></div>
+
+				<div class="glass-solid" style="padding:28px 20px;text-align:center;border:0.5px solid rgba(245,158,11,0.26);box-shadow:var(--shadow-md);">
+					<p style="margin-bottom:8px;color:var(--text-3);font-size:13px;">Akses seluruh produk:</p>
+					<p class="price-old" style="margin-bottom:8px;font-size:20px;font-weight:700;line-height:1;letter-spacing:-0.02em;">Rp 199.000</p>
+					<p style="margin-bottom:4px;color:var(--cta);font-size:46px;font-weight:800;line-height:1;letter-spacing:-0.04em;">Rp 139.000</p>
+					<div style="height:20px;"></div>
+					<a href="https://lynk.id/imamchroz/0n2o80ew22d8/checkout" class="cta-btn">🚀 DAPATKAN AKSES</a>
+				</div>
+			</div>
+		</section>
+
+		<section class="section anim d7">
+			<div class="container">
+				<h2 class="h2">Paket ini sesuai untuk kamu yang...</h2>
+				<div class="for-grid">
+					<div class="glass" style="padding:18px;">
+						<p style="margin-bottom:14px;color:#22c55e;font-size:12px;font-weight:700;">✅ SESUAI UNTUK KAMU JIKA:</p>
+						<div style="display:flex;flex-direction:column;gap:10px;">
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#22c55e;font-size:15px;font-weight:700;">✓</span><span>Menjual Produk dan ingin ngerti performa bisnis lebih dalam</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#22c55e;font-size:15px;font-weight:700;">✓</span><span>Sering bingung baca angka seperti omzet, ATV, UPT, conversion, dll</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#22c55e;font-size:15px;font-weight:700;">✓</span><span>Mau mulai ambil keputusan pakai data, bukan feeling!</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#22c55e;font-size:15px;font-weight:700;">✓</span><span>Ingin tahu strategi apa yang harus dilakukan dari angka yang ada</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#22c55e;font-size:15px;font-weight:700;">✓</span><span>Butuh tools praktis: cukup input omzet → langsung keluar analisa & rekomendasi</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#22c55e;font-size:15px;font-weight:700;">✓</span><span>Mau sistem yang bisa dikembangkan & di-custom sesuai kebutuhan bisnis</span></div>
+						</div>
+					</div>
+					<div class="glass" style="padding:18px;">
+						<p style="margin-bottom:14px;color:#f87171;font-size:12px;font-weight:700;">❌ KURANG SESUAI JIKA:</p>
+						<div style="display:flex;flex-direction:column;gap:10px;">
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#f87171;font-size:15px;font-weight:700;">✗</span><span>Maunya langsung hasil tanpa mau belajar memahami data</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#f87171;font-size:15px;font-weight:700;">✗</span><span>Masih nyaman menjalankan bisnis hanya berdasarkan feeling</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#f87171;font-size:15px;font-weight:700;">✗</span><span>Tidak tertarik melihat performa bisnis secara detail</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#f87171;font-size:15px;font-weight:700;">✗</span><span>Berharap tools ini otomatis bikin bisnis langsung naik tanpa aksi</span></div>
+							<div style="display:flex;align-items:flex-start;gap:10px;color:var(--text-2);font-size:13px;line-height:1.6;"><span style="color:#f87171;font-size:15px;font-weight:700;">✗</span><span>Tidak mau eksplor dengan kebutuhan sendiri</span></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section anim d8" style="padding:48px 0;text-align:center;">
+			<div class="container">
+				<div style="height:12px;"></div>
+				<h2 style="margin-bottom:14px;font-family:var(--font-display);font-size:26px;letter-spacing:-0.025em;line-height:1.3;">Mulai kontrol bisnis lo pakai data<br>bukan feeling semata</h2>
+				<p style="max-width:100%;margin:0 auto 24px;color:var(--text-2);font-size:14px;line-height:1.75;">Lewat template perhitungan ini, lo bisa baca performa bisnis lebih jelas, tahu titik lemah yang perlu diperbaiki, dan ambil keputusan dengan arah yang lebih pasti. Hasil tetap bergantung pada eksekusi masing-masing.</p>
+				<a href="https://lynk.id/imamchroz/0n2o80ew22d8/checkout" class="cta-btn">🚀 MULAI BELAJAR - <div class="cta-price-stack"><span class="cta-price-new">Rp 139.000</span><span class="cta-price-old">Rp 199.000</span></div></a>
+				<p style="margin-top:14px;color:var(--text-3);font-size:11px;line-height:1.8;"><span style="color:#22c55e;font-weight:600;">✓</span> Akses setelah pembayaran &nbsp;·&nbsp; <span style="color:#22c55e;font-weight:600;">✓</span> Materi pendukung termasuk &nbsp;·&nbsp; <span style="color:#22c55e;font-weight:600;">✓</span> Informasi produk jelas</p>
+			</div>
+		</section>
+
+		<div class="scroll-popup" id="scrollPopup" aria-hidden="true">
+			<div class="scroll-popup-backdrop" data-close-popup="true"></div>
+			<div class="scroll-popup-card" role="dialog" aria-modal="true" aria-labelledby="scrollPopupTitle">
+				<button type="button" class="scroll-popup-close" aria-label="Tutup popup" data-close-popup="true">×</button>
+				<span class="scroll-popup-eyebrow">Penawaran Spesial</span>
+				<h3 class="scroll-popup-title" id="scrollPopupTitle">Khusus untuk kamu!</h3>
+				<p class="scroll-popup-desc">Masukkan kode voucher ini saat checkout untuk mendapatkan potongan Rp 50.000</p>
+				<div class="scroll-popup-voucher">
+					<span class="scroll-popup-voucher-code" id="popupVoucherCode">POTONGAN50K</span>
+					<button type="button" class="scroll-popup-copy-btn" id="copyVoucherBtn" aria-label="Copy kode voucher">
+						<span class="scroll-popup-copy-icon" id="copyVoucherIcon" aria-hidden="true">📋</span>
+						<span id="copyVoucherText">Copy</span>
+					</button>
+				</div>
+				<p class="scroll-popup-copy-note" id="copyVoucherNote">Voucher hanya berlaku sampai batas waktu tertentu,<br>Gunakan sekarang sebelum kadaluarsa!</p>
+				<a href="https://lynk.id/imamchroz/0n2o80ew22d8/checkout" class="scroll-popup-cta">🚀 Dapatkan Akses</a>
+			</div>
+		</div>
+
+	</div>
+
+	<script>
+		(function () {
+			if ('scrollRestoration' in history) {
+				history.scrollRestoration = 'manual';
+			}
+
+			function resetToTop() {
+				window.scrollTo(0, 0);
+			}
+
+			resetToTop();
+			window.addEventListener('load', resetToTop);
+			window.addEventListener('pageshow', resetToTop);
+
+			var targetButton = document.querySelector('.section.anim.d6 .cta-btn');
+			var popup = document.getElementById('scrollPopup');
+			if (!targetButton || !popup) return;
+			var voucherCodeEl = document.getElementById('popupVoucherCode');
+			var copyVoucherBtn = document.getElementById('copyVoucherBtn');
+			var copyVoucherIcon = document.getElementById('copyVoucherIcon');
+			var copyVoucherText = document.getElementById('copyVoucherText');
+			var copyVoucherNote = document.getElementById('copyVoucherNote');
+
+			var popupShown = false;
+			var closeEls = popup.querySelectorAll('[data-close-popup="true"]');
+
+			function openPopup() {
+				if (popupShown) return;
+				popupShown = true;
+				popup.classList.add('is-open');
+				popup.setAttribute('aria-hidden', 'false');
+			}
+
+			function closePopup() {
+				popup.classList.remove('is-open');
+				popup.setAttribute('aria-hidden', 'true');
+			}
+
+			function setCopyState(copied) {
+				if (!copyVoucherIcon || !copyVoucherText || !copyVoucherNote) return;
+				if (copied) {
+					copyVoucherIcon.textContent = '✅';
+					copyVoucherText.textContent = 'Copied';
+					copyVoucherNote.textContent = 'Kode voucher berhasil dicopy.';
+					return;
+				}
+				copyVoucherIcon.textContent = '📋';
+				copyVoucherText.textContent = 'Copy';
+				copyVoucherNote.textContent = 'Pakai kode voucher ini saat checkout.';
+			}
+
+			closeEls.forEach(function (el) {
+				el.addEventListener('click', closePopup);
+			});
+
+			if (copyVoucherBtn && voucherCodeEl) {
+				copyVoucherBtn.addEventListener('click', function () {
+					var voucherCode = (voucherCodeEl.textContent || '').trim();
+					if (!voucherCode) return;
+
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						navigator.clipboard.writeText(voucherCode).then(function () {
+							setCopyState(true);
+							window.setTimeout(function () { setCopyState(false); }, 1500);
+						}).catch(function () {
+							setCopyState(false);
+						});
+						return;
+					}
+
+					var tempInput = document.createElement('input');
+					tempInput.value = voucherCode;
+					document.body.appendChild(tempInput);
+					tempInput.select();
+					document.execCommand('copy');
+					document.body.removeChild(tempInput);
+					setCopyState(true);
+					window.setTimeout(function () { setCopyState(false); }, 1500);
+				});
+			}
+
+			document.addEventListener('keydown', function (event) {
+				if (event.key === 'Escape') closePopup();
+			});
+
+			var observer = new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					if (entry.isIntersecting) {
+						openPopup();
+						observer.disconnect();
+					}
+				});
+			}, { threshold: 0.55 });
+
+			var videoFrame = document.querySelector('.bundle-row iframe');
+			var videoStarted = false;
+
+			function buildAutoplaySrc(src) {
+				try {
+					var url = new URL(src, window.location.href);
+					url.searchParams.set('autoplay', '1');
+					url.searchParams.set('mute', '1');
+					url.searchParams.set('playsinline', '1');
+					url.searchParams.set('rel', '0');
+					return url.toString();
+				} catch (error) {
+					return src + (src.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1&mute=1&playsinline=1&rel=0';
+				}
+			}
+
+			if (videoFrame) {
+				var videoObserver = new IntersectionObserver(function (entries) {
+					entries.forEach(function (entry) {
+						if (entry.isIntersecting && !videoStarted) {
+							videoStarted = true;
+							videoFrame.src = buildAutoplaySrc(videoFrame.src);
+							videoObserver.disconnect();
+						}
+					});
+				}, { threshold: 0.4 });
+
+				videoObserver.observe(videoFrame);
+			}
+
+			observer.observe(targetButton);
+		})();
+	</script>
+</body>
+</html>

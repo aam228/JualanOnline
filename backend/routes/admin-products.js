@@ -63,6 +63,8 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     const {
       name,
       brand,
+      category,
+      type,
       price,
       condition,
       description,
@@ -98,7 +100,8 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       slug,
       name,
       brand: brand || '',
-      type: 'vintage',
+      category: category || '',
+      type: type || 'streetwear',
       price: price,
       currency: 'IDR',
       condition: condition || 'used',

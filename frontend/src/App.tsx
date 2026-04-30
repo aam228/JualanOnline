@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
@@ -12,10 +12,9 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentPage from './pages/PaymentPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminProductForm from './pages/AdminProductForm';
+import AdminDashboard from './pages/AdminDashboard.tsx';
+import AdminProductForm from './pages/AdminProductForm.tsx';
 import Cart from './components/Cart';
-import ProductCreatePage from './pages/admin/ProductCreatePage';
 import CollectionsPage from './pages/CollectionsPage';
 import AllProductsPage from './pages/AllProductsPage';
 import LoginPage from './pages/LoginPage';
@@ -51,7 +50,7 @@ function AppLayout({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean; setIsCa
             <Route path="/admin/products" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/products/new" element={<AdminRoute><AdminProductForm /></AdminRoute>} />
             <Route path="/admin/products/:id" element={<AdminRoute><AdminProductForm /></AdminRoute>} />
-            <Route path="/admin/products/create" element={<AdminRoute><ProductCreatePage /></AdminRoute>} />
+            <Route path="/admin/products/create" element={<AdminRoute><Navigate to="/admin/products/new" replace /></AdminRoute>} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/all" element={<AllProductsPage />} />
           </Routes>

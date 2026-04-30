@@ -50,6 +50,15 @@
   overflow: hidden;
 }
 
+.admin-dashboard-table {
+  overflow-x: auto;
+}
+
+.admin-dashboard-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .admin-dashboard-table th,
 .admin-dashboard-table td {
   padding: 1rem 1.5rem;
@@ -149,4 +158,120 @@
 .admin-error-message p {
   margin: 0;
   font-size: 14px;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .admin-dashboard-container {
+    padding: 1.5rem 0.85rem;
+  }
+
+  .admin-dashboard-title {
+    font-size: 1.7rem;
+  }
+
+  .admin-dashboard-desc {
+    font-size: 14px;
+  }
+
+  .admin-dashboard-table th,
+  .admin-dashboard-table td {
+    padding: 0.85rem 1rem;
+    font-size: 0.93rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .admin-dashboard {
+    min-height: auto;
+  }
+
+  .admin-dashboard-container {
+    padding: 1rem 0.6rem;
+  }
+
+  .admin-dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-dashboard-title {
+    font-size: 1.4rem;
+  }
+
+  .admin-dashboard-desc {
+    margin-top: 0.25rem;
+    font-size: 13px;
+  }
+
+  .admin-dashboard-add-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.65rem 1rem;
+    font-size: 14px;
+  }
+
+  .admin-dashboard-table {
+    border-radius: 10px;
+  }
+
+  .admin-dashboard-table table {
+    min-width: 760px;
+  }
+
+  .admin-dashboard-table th,
+  .admin-dashboard-table td {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.87rem;
+    white-space: nowrap;
+  }
+
+  .admin-dashboard-status-published,
+  .admin-dashboard-status-draft {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .admin-dashboard-action-btn {
+    padding: 0.4rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .admin-dashboard-container {
+    padding: 0.85rem 0.45rem;
+  }
+
+  .admin-dashboard-title {
+    font-size: 1.25rem;
+  }
+
+  .admin-dashboard-add-btn {
+    font-size: 13px;
+    padding: 0.6rem 0.85rem;
+  }
+
+  .admin-dashboard-table table {
+    min-width: 700px;
+  }
+
+  .admin-dashboard-table th,
+  .admin-dashboard-table td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .admin-dashboard-pagination {
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+  }
+
+  .admin-dashboard-pagination-btn {
+    padding: 0.45rem 0.8rem;
+    font-size: 13px;
+  }
 }
