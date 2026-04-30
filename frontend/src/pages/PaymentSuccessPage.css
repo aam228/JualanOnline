@@ -3,7 +3,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 12px 20px;
+  overflow: hidden;
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -19,17 +20,80 @@
 .success-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
-  padding: 40px;
-  max-width: 600px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px 20px;
+  max-width: 1040px;
   width: 100%;
   text-align: center;
 }
 
+.success-header {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) minmax(260px, 320px);
+  gap: 12px 16px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.success-copy {
+  text-align: left;
+}
+
+.success-metadata {
+  display: grid;
+  gap: 8px;
+}
+
+.meta-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.meta-label {
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.meta-value {
+  color: #333;
+  font-size: 12px;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.meta-value-amount {
+  color: #27ae60;
+}
+
+.status-badge-compact {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.success-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.action-panel {
+  display: grid;
+  gap: 10px;
+}
+
 /* Icon */
 .icon {
-  font-size: 60px;
-  margin-bottom: 20px;
+  font-size: 46px;
+  margin-bottom: 0;
   animation: bounce 0.6s ease-out;
 }
 
@@ -45,33 +109,34 @@
 .success-icon {
   color: #27ae60;
   background: #d4edda;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  margin: 0 auto 20px;
+  margin: 0;
 }
 
 .failed-icon {
   color: #e74c3c;
   background: #fee;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  margin: 0 auto 20px;
+  margin: 0;
 }
 
 /* Typography */
 .success-card h1 {
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   color: #333;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
+  line-height: 1.1;
 }
 
 .success-card.failed h1 {
@@ -79,28 +144,39 @@
 }
 
 .status-message {
-  margin: 0 0 30px;
+  margin: 0 0 8px;
   color: #666;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.status-message-tight {
+  margin-bottom: 6px;
 }
 
 /* Order Details */
 .order-details {
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
+  padding: 12px;
+  margin-bottom: 0;
   text-align: left;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #e9ecef;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.detail-row-full {
+  grid-column: 1 / -1;
 }
 
 .detail-row:last-child {
@@ -119,27 +195,23 @@
 }
 
 .detail-row .amount {
-  font-size: 18px;
+  font-size: 16px;
   color: #27ae60;
 }
 
 .status-badge {
   background: #d4edda;
   color: #155724;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 600;
   display: inline-block;
 }
 
 /* Next Steps */
 .next-steps {
-  background: #e8f4f8;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
-  text-align: left;
+  display: none;
 }
 
 .next-steps h3 {
@@ -164,17 +236,17 @@
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 12px;
-  margin-bottom: 30px;
-  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
+  flex-wrap: wrap;
 }
 
 .btn-orders,
 .btn-home {
-  padding: 12px 24px;
+  padding: 10px 14px;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -185,6 +257,7 @@
   color: white;
   border: none;
   transition: background 0.2s ease;
+  min-width: 200px;
 }
 
 .btn-orders:hover {
@@ -195,18 +268,28 @@
 .btn-home {
   background: #e9ecef;
   color: #333;
+  min-width: 160px;
 }
 
 .btn-home:hover {
   background: #dee2e6;
 }
 
+.btn-home-compact {
+  min-width: 160px;
+}
+
 /* Support Info */
 .support-info {
   color: #666;
-  font-size: 13px;
+  font-size: 12px;
   border-top: 1px solid #e9ecef;
-  padding-top: 20px;
+  padding-top: 10px;
+  text-align: left;
+}
+
+.support-info-compact {
+  margin-top: 2px;
 }
 
 .support-info a {
@@ -250,41 +333,164 @@
   margin: 0;
 }
 
+.steps-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.steps-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.steps-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 520px);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 16px 18px;
+  text-align: left;
+}
+
+.steps-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.steps-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.steps-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #333;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.steps-modal-card ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.steps-modal-card li {
+  margin-bottom: 8px;
+}
+
 /* Responsive Design */
-@media (max-width: 600px) {
+@media (min-width: 1024px) {
+  .payment-success-container {
+    padding: 10px 20px;
+  }
+
   .success-card {
-    padding: 25px;
+    min-height: calc(100vh - 20px);
+    max-height: calc(100vh - 20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 600px) {
+  .payment-success-container {
+    padding: 12px 16px;
+    overflow: auto;
+  }
+
+  .success-card {
+    padding: 14px 16px;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .success-header {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .success-copy {
+    text-align: center;
+  }
+
+  .success-metadata {
+    grid-template-columns: 1fr;
+  }
+
+  .success-content {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .action-panel {
+    gap: 8px;
+  }
+
+  .meta-pill {
+    min-height: 32px;
+  }
+
+  .icon {
+    font-size: 36px;
+  }
+
+  .success-icon,
+  .failed-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
   }
 
   .success-card h1 {
-    font-size: 24px;
+    font-size: 18px;
   }
 
   .status-message {
-    font-size: 14px;
-    margin-bottom: 20px;
+    font-size: 12px;
+    margin-bottom: 6px;
   }
 
-  .order-details,
-  .next-steps {
-    padding: 15px;
-    margin-bottom: 20px;
+  .order-details {
+    padding: 10px;
+    grid-template-columns: 1fr;
   }
 
   .detail-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
-    padding: 10px 0;
+    padding: 7px 0;
   }
 
-  .next-steps h3 {
-    font-size: 14px;
-    margin-bottom: 10px;
+  .detail-row-full {
+    grid-column: auto;
   }
 
-  .next-steps ol {
-    font-size: 13px;
+  .detail-row .amount {
+    font-size: 15px;
   }
 
   .action-buttons {
@@ -294,7 +500,46 @@
   .btn-orders,
   .btn-home {
     width: 100%;
-    padding: 10px;
-    font-size: 13px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .btn-orders {
+    min-width: 0;
+  }
+
+  .btn-home,
+  .btn-home-compact {
+    min-width: 0;
+  }
+
+  .steps-modal {
+    padding: 16px;
+  }
+
+  .steps-modal-card {
+    padding: 14px 16px;
+  }
+
+  .steps-modal-header h3 {
+    font-size: 16px;
+  }
+
+  .steps-modal-card ol {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .payment-success-container {
+    padding: 10px 12px;
+  }
+
+  .success-card {
+    padding: 12px;
+  }
+
+  .success-card h1 {
+    font-size: 17px;
   }
 }
