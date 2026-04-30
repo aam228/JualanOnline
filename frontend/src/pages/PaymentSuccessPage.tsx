@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './PaymentSuccessPage.css';
@@ -13,6 +13,7 @@ const PaymentSuccessPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [waUrl, setWaUrl] = useState('');
   const [waWarning, setWaWarning] = useState<string | null>(null);
+  const waOpenedRef = useRef(false);
 
   // Query params: Stripe uses session_id, PayPal uses orderID
   const queryParams = new URLSearchParams(location.search);
@@ -166,6 +167,23 @@ const PaymentSuccessPage = () => {
     setWaUrl(targetUrl);
   }, [loading, error, paymentData, sellerWaNumber]);
 
+  useEffect(() => {
+    if (!waUrl || waOpenedRef.current) {
+      return;
+    }
+
+    waOpenedRef.current = true;
+
+    const timeoutId = window.setTimeout(() => {
+      const popup = window.open(waUrl, '_blank', 'noopener,noreferrer');
+      if (!popup) {
+        setWaWarning('Browser menahan tab baru. Silakan klik tombol WhatsApp di bawah untuk membuka ulang.');
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [waUrl]);
+
   const handleOpenWhatsApp = () => {
     if (!waUrl) {
       setWaWarning('Template WhatsApp belum siap. Silakan tunggu sebentar atau cek konfigurasi nomor penjual.');
@@ -212,7 +230,7 @@ const PaymentSuccessPage = () => {
         <div className="icon success-icon">✓</div>
         <h1>Pembayaran Berhasil!</h1>
         <p className="status-message">Terima kasih telah melakukan pembayaran</p>
-        <p className="status-message">Anda akan diarahkan otomatis ke WhatsApp untuk mengirim data transaksi.</p>
+      <p className="status-message">WhatsApp akan dibuka otomatis di tab baru. Jika diblokir, gunakan tombol WhatsApp di bawah.</p>
         {waWarning && <p className="status-message">{waWarning}</p>}
 
         {/* Order Details */}
@@ -262,7 +280,7 @@ const PaymentSuccessPage = () => {
             <li>Pesanan Anda akan segera diproses</li>
             <li>Barang akan dikirim sesuai jadwal pengiriman yang dipilih</li>
           </ol>
-          {waUrl && <p className="status-message">Template WhatsApp sudah disiapkan. Silakan buka di tab baru kalau perlu mengirim data transaksi.</p>}
+          {waUrl && <p className="status-message">Template WhatsApp sudah disiapkan. Tombol di bawah bisa dipakai kapan saja jika tab otomatis gagal terbuka.</p>}
         </div>
 
         {/* Action Buttons */}
